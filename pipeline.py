@@ -1,7 +1,7 @@
 """AgniCal v2 pipeline: NASA FIRMS CSVs -> harmonized record + burning-time analysis -> site data.
 
 Usage:
-    python pipeline.py              # reads data/raw, writes data/processed and site/data
+    python pipeline.py              # reads data/raw, writes data/processed, reports and docs/data
     python pipeline.py --fast       # smaller models and fewer bootstrap draws, for a quick look
 """
 from __future__ import annotations
@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from agnical import config, diurnal, export
+from agnical import config, controls, diurnal, export
 from agnical.grid import build_panel
 from agnical.harmonize import build_harmonized, cross_validate, drift_test, evaluate, ratio_stability
 from agnical.ingest import load_firms
@@ -41,6 +41,7 @@ def main(argv=None):
 
     print("[2/7] Keeping detections inside the real borders of Punjab and Haryana ...")
     districts = load_districts()
+    det_box = controls.assign_region(det)          # study area and comparison regions
     det = keep_study_area(det, districts)
     info["rows_in_states"] = int(len(det))
     info["by_satellite"] = {f"{k[0]} {k[1]}": int(v) for k, v in det.groupby(["sensor", "satellite"]).size().items()}
@@ -55,9 +56,23 @@ def main(argv=None):
     indicators = diurnal.indicators(det)
     breaks = diurnal.timing_breaks(indicators)
     timing = timing.merge(breaks, on="year", how="left")
-    print(timing[["year", "peak_ist", "peak_lo", "peak_hi", "beyond_view", "n_flags", "timing_break"]]
-          .round(2).tail(8).to_string(index=False))
 
+    print("      Controls: comparison regions, near-nadir, late-view floor, VIIRS-only test ...")
+    study = det_box[det_box["region"] == controls.STUDY]
+    did = controls.diff_in_diff(det_box, n_boot=200 if a.fast else 1000)
+    ctrl = {
+        "regions": controls.region_indicators(det_box),
+        "did": did,
+        "nadir": controls.nadir_check(study),
+        "late_view": controls.late_view_floor(indicators),
+        "viirs_window": controls.viirs_window_test(study),
+        "handover": controls.handover(study),
+    }
+    # A break is 'confirmed' when the study area also moved further than the comparison region
+    # on both indicators (95% interval of the ratio above 1).
+    conf = did.assign(ok=did["ratio_lo"] > 1).groupby("year")["ok"].all()
+    timing["timing_confirmed"] = timing["timing_break"].fillna(False) & timing["year"].map(conf).fillna(False)
+    print(did.round(2).to_string(index=False))
     print("[4/7] Gridding to 0.1 degree cells x 8-day periods ...")
     panel = build_panel(det, end_date=a.end)
     print(f"      {panel[['ix', 'iy']].drop_duplicates().shape[0]:,} active cells, {len(panel):,} rows")
@@ -82,6 +97,10 @@ def main(argv=None):
     hs.to_parquet(a.out / "harmonized.parquet", index=False)
     timing.to_csv(a.out / "burning_time.csv", index=False)
     indicators.to_csv(a.out / "timing_indicators.csv", index=False)
+    for k, v in ctrl.items():
+        v.to_csv(a.out / f"control_{k}.csv", index=False)
+    print(timing[["year", "peak_ist", "beyond_view", "n_flags", "timing_break", "timing_confirmed"]]
+          .round(2).tail(6).to_string(index=False))
     meta = {"data": info, "metrics": metrics, "feature_importance": model.importance().round(4).to_dict(),
             "drift_test": drift.to_dict(orient="records"),
             "diurnal": {"sigma0_h": dfit["sigma0"], "beta": dfit["beta"], "n_days": dfit["n_days"],
@@ -89,9 +108,9 @@ def main(argv=None):
                         "baseline_peak_ist": timing.attrs.get("baseline_peak_ist")},
             "runtime_s": round(time.time() - t0, 1)}
     (a.out / "meta.json").write_text(json.dumps(meta, indent=2, default=float))
-    write_results(meta, stab, config.REPORT_DIR / "RESULTS.md")
+    write_results(meta, stab, config.REPORT_DIR / "RESULTS.md", timing=timing, ctrl=ctrl)
     export.write_site_data(a.site, det=det, harmonized=hs, timing=timing, indicators=indicators,
-                           districts=districts, meta=meta, cv=cv)
+                           districts=districts, meta=meta, cv=cv, ctrl=ctrl)
     print(f"Done in {round(time.time() - t0, 1)} s. Site data in {a.site}")
 
 

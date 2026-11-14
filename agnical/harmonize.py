@@ -135,6 +135,21 @@ def evaluate(cv: pd.DataFrame) -> dict:
                 "peak_exact_pct": float((peak_err == 0).mean() * 100),
             }
         res["models"][n] = m
+    # Is the difference in season-total error between the model and the regional ratio more than
+    # chance? Paired Wilcoxon test on the absolute yearly errors.
+    if {"gbm_poisson", "global_ratio"} <= set(names):
+        from scipy.stats import wilcoxon
+        res["total_error_test"] = {}
+        for s in config.SEASONS:
+            sub = reg[reg.index.get_level_values("period").isin(season_periods(s))]
+            tot = sub.groupby("year").sum()
+            tot = tot[tot[TARGET] > 0]
+            a = ((tot["pred_gbm_poisson"] - tot[TARGET]) / tot[TARGET]).abs()
+            b = ((tot["pred_global_ratio"] - tot[TARGET]) / tot[TARGET]).abs()
+            try:
+                res["total_error_test"][s] = float(wilcoxon(a, b).pvalue)
+            except ValueError:
+                res["total_error_test"][s] = float("nan")
     return res
 
 

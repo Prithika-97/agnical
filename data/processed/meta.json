@@ -122,6 +122,10 @@
           }
         }
       }
+    },
+    "total_error_test": {
+      "Kharif (paddy residue, Oct-Nov)": 0.3203125,
+      "Rabi (wheat residue, Apr-May)": 0.0322265625
     }
   },
   "feature_importance": {
@@ -195,5 +199,5 @@
     "n_boot": 300,
     "baseline_peak_ist": null
   },
-  "runtime_s": 116.4
+  "runtime_s": 137.2
 }

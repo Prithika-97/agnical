@@ -18,14 +18,29 @@ KHARIF = list(config.SEASONS)[0]
 RABI = list(config.SEASONS)[1]
 
 # Independent published estimates of the peak burning hour, used only as an outside check.
+SOURCES = [
+    {"key": "jethva2026", "text": "Jethva, H. (2026). Timing the Flames: Geostationary Satellite Detection of Diurnally "
+     "Shifting Stubble Burning in Northwestern India. Remote Sensing 18(10), 1506 (GEO-KOMPSAT-2A AMI, 2019-2025).",
+     "url": "https://doi.org/10.3390/rs18101506"},
+    {"key": "singh2025", "text": "Singh, N., Pradhan, R., Shukla, B. P. and Pandya, M. R. (Space Applications Centre, ISRO), "
+     "communication in Current Science, 2025 (Meteosat SEVIRI), as reported by The Tribune, 10 Dec 2025.",
+     "url": "https://www.tribuneindia.com/news/haryana/farmers-shift-stubble-burning-time-to-dodge-satellite-tracking-isro-study"},
+    {"key": "iforest2025", "text": "iFOREST (2025). Stubble Burning Status Report 2025 (Sentinel-2 burnt area, Meteosat SEVIRI "
+     "timing), as reported by The Tribune, 9 Dec 2025.",
+     "url": "https://www.tribuneindia.com/news/delhi/satellites-miss-majority-of-stubble-fires-delhi-air-pollution-underestimated-report"},
+]
+# Burnt area mapped from Sentinel-2 by iFOREST: an outside measure that does not depend on the hour.
+BURNT_AREA = {"source": "iforest2025", "state": "Punjab", "from_year": 2022, "from_km2": 31447,
+              "to_year": 2025, "to_km2": 20000}
+
 PUBLISHED = [
-    {"year": 2020, "peak_ist": 13.5, "label": "ISRO SAC (Meteosat SEVIRI): peak ~13:30 in 2020",
-     "url": "https://www.tribuneindia.com/news/india/reduced-farm-fire-claims-misleading-farmers-evading-satellites-isro-study/amp"},
-    {"year": 2024, "peak_ist": 17.0, "label": "ISRO SAC (Meteosat SEVIRI): peak ~17:00 in 2024",
-     "url": "https://www.tribuneindia.com/news/india/reduced-farm-fire-claims-misleading-farmers-evading-satellites-isro-study/amp"},
+    {"year": 2020, "peak_ist": 13.5, "label": "Singh et al., ISRO SAC (Meteosat SEVIRI): peak ~13:30 in 2020",
+     "url": SOURCES[1]["url"]},
+    {"year": 2024, "peak_ist": 17.0, "label": "Singh et al., ISRO SAC (Meteosat SEVIRI): peak ~17:00 in 2024",
+     "url": SOURCES[1]["url"]},
     {"year": 2025, "peak_lo": 16.0, "peak_hi": 18.0,
-     "label": "NASA (GEO-KOMPSAT-2A, H. Jethva): most fires now 16:00-18:00",
-     "url": "https://ianslive.in/indias-stubble-burning-shifts-later-in-day-satellites-reveal--20251216033604"},
+     "label": "Jethva 2026 (GEO-KOMPSAT-2A): fire signal spikes around and after 16:00",
+     "url": SOURCES[0]["url"]},
 ]
 
 
@@ -56,7 +71,7 @@ def season_totals(h: pd.DataFrame, by: list[str]) -> pd.DataFrame:
     return pd.concat(rows, ignore_index=True)
 
 
-def write_site_data(out: Path, det, harmonized, timing, indicators, districts, meta, cv) -> None:
+def write_site_data(out: Path, det, harmonized, timing, indicators, districts, meta, cv, ctrl=None) -> None:
     out.mkdir(parents=True, exist_ok=True)
     h = _cells_to_districts(harmonized, districts)
     h = h[h["state"].notna()]
@@ -66,7 +81,7 @@ def write_site_data(out: Path, det, harmonized, timing, indicators, districts, m
     timing_json = {
         "years": [{k: _r(v, 3) if isinstance(v, float) else v for k, v in r.items()} for r in tim.to_dict("records")],
         "baseline_peak_ist": _r(timing.loc[timing["year"].between(2012, 2022), "peak_ist"].mean(), 3),
-        "published": PUBLISHED,
+        "published": PUBLISHED, "sources": SOURCES,
         "model": meta["diurnal"],
     }
     (out / "timing.json").write_text(json.dumps(timing_json, default=float))
@@ -76,7 +91,7 @@ def write_site_data(out: Path, det, harmonized, timing, indicators, districts, m
     reg = season_totals(h.assign(state="Punjab + Haryana"), ["state"])
     tot = pd.concat([reg, st], ignore_index=True)
     k = metrics_band(meta)
-    tot = tot.merge(timing[["year", "timing_break"]], on="year", how="left")
+    tot = tot.merge(timing[["year", "timing_break", "timing_confirmed"]], on="year", how="left")
     record = {}
     for (area, season), g in tot.groupby(["state", "season"]):
         q10, q90 = k.get(season, (np.nan, np.nan))
@@ -91,6 +106,7 @@ def write_site_data(out: Path, det, harmonized, timing, indicators, districts, m
                 row["hi"] = _r(r.harmonized / (1 + q10), 0)
             if season == KHARIF:
                 row["timing_break"] = bool(r.timing_break) if pd.notna(r.timing_break) else False
+                row["timing_confirmed"] = bool(r.timing_confirmed) if pd.notna(r.timing_confirmed) else False
             rows.append(row)
         record.setdefault(area, {})[season] = rows
     (out / "record.json").write_text(json.dumps(record))
@@ -136,12 +152,21 @@ def write_site_data(out: Path, det, harmonized, timing, indicators, districts, m
     gdf.to_file(out / "districts.geojson", driver="GeoJSON")
 
     # ---------- 2026 live season, one sensor (NOAA-20) for all years ----------
-    j1 = det[(det["sensor"] == "VIIRS") & (det["satellite"] == "NOAA20")].copy()
+    vi = det[det["sensor"] == "VIIRS"]
+    has26 = [s_ for s_ in ("NOAA20", "NOAA21") if ((vi["satellite"] == s_) & (vi["date"].dt.year == 2026)).any()]
+    live_sat = has26[0] if has26 else "NOAA20"
+    j1 = vi[vi["satellite"] == live_sat].copy()
     j1["year"] = j1["date"].dt.year
     j1["md"] = j1["date"].dt.strftime("%m-%d")
     j1 = j1[(j1["md"] >= "09-15") & (j1["md"] <= "12-15")]
     days = pd.date_range("2021-09-15", "2021-12-15").strftime("%m-%d")
-    live = {"days": list(days), "series": {}}
+    live = {"days": list(days), "series": {}, "satellite": {"NOAA20": "NOAA-20", "NOAA21": "NOAA-21"}[live_sat]}
+    if ctrl is not None and len(ctrl["handover"]):
+        ho = ctrl["handover"][ctrl["handover"]["satellite"] == live_sat]
+        if len(ho):
+            live["snpp_per_new"] = {"pooled": _r(ho["snpp"].sum() / ho["new"].sum(), 3),
+                                    "lo": _r(ho["snpp_per_new"].min(), 3), "hi": _r(ho["snpp_per_new"].max(), 3),
+                                    "years": [int(y) for y in ho["year"]]}
     for area, sub in [("Punjab + Haryana", j1)] + list(j1.groupby("state")):
         live["series"][area] = {}
         for y, g in sub.groupby("year"):
@@ -162,6 +187,43 @@ def write_site_data(out: Path, det, harmonized, timing, indicators, districts, m
                            for y, g in reg.groupby("year")}}
     (out / "validation.json").write_text(json.dumps(val, default=float))
 
+    # ---------- controls ----------
+    if ctrl is not None:
+        def recs(df, nd=4):
+            return [{k: (_r(v, nd) if isinstance(v, (float, np.floating)) else (int(v) if isinstance(v, (np.integer,)) else
+                         (bool(v) if isinstance(v, (np.bool_,)) else v))) for k, v in r.items()}
+                    for r in df.to_dict("records")]
+        rg = ctrl["regions"]
+        keep = ["region", "year", "snpp_day", "snpp_night", "aqua_day", "terra_day", "aqua_over_snpp", "night_share",
+                "terra_over_aqua", "aqua_over_snpp_x_baseline", "night_share_x_baseline",
+                "terra_over_aqua_x_baseline", "n_flags", "timing_break"]
+        (out / "controls.json").write_text(json.dumps({
+            "study": __import__("agnical.controls", fromlist=["x"]).STUDY,
+            "control": __import__("agnical.controls", fromlist=["x"]).PAKISTAN,
+            "regions": recs(rg[rg["year"] >= 2012][keep]), "did": recs(ctrl["did"], 3),
+            "nadir": recs(ctrl["nadir"]), "late_view": recs(ctrl["late_view"], 3),
+            "viirs_window": recs(ctrl["viirs_window"], 3), "handover": recs(ctrl["handover"], 3),
+            "burnt_area": BURNT_AREA}, default=float))
+
+    # ---------- the record as one downloadable table ----------
+    rows = []
+    lv = ctrl["late_view"].set_index("year") if ctrl is not None else None
+    for area, seasons in record.items():
+        for season, rr in seasons.items():
+            for r in rr:
+                if r["year"] > 2025:
+                    continue
+                row = {"area": area, "season": season, "year": r["year"], "source": r["source"],
+                       "viirs_equivalent_detections": r["harmonized"], "lo_p10": r.get("lo"), "hi_p90": r.get("hi"),
+                       "raw_modis": r["modis"], "raw_suomi_npp": r["snpp"],
+                       "timing_break": r.get("timing_break", ""), "timing_break_confirmed": r.get("timing_confirmed", "")}
+                if lv is not None and area == "Punjab + Haryana" and season == KHARIF and r["year"] in lv.index and r["year"] >= 2023:
+                    row["late_view_floor_factor"] = _r(lv.loc[r["year"], "factor"], 2)
+                    row["late_view_floor_factor_lo"] = _r(lv.loc[r["year"], "factor_lo"], 2)
+                    row["late_view_floor_factor_hi"] = _r(lv.loc[r["year"], "factor_hi"], 2)
+                rows.append(row)
+    pd.DataFrame(rows).to_csv(out / "agnical_record.csv", index=False)
+
     # ---------- headline numbers ----------
     kr = pd.DataFrame(record["Punjab + Haryana"][KHARIF]).set_index("year")
     ind = indicators.set_index("year")
@@ -180,7 +242,8 @@ def write_site_data(out: Path, det, harmonized, timing, indicators, districts, m
         "baseline_peak_ist": timing_json["baseline_peak_ist"],
         "peak": {int(r.year): [_r(r.peak_ist, 2), _r(r.peak_lo, 2), _r(r.peak_hi, 2), bool(r.beyond_view)]
                  for r in timing.itertuples()},
-        "timing_break_years": [int(r.year) for r in timing.itertuples() if r.timing_break is True],
+        "timing_break_years": [int(r.year) for r in timing.itertuples() if r.timing_break == True],
+        "timing_confirmed_years": [int(r.year) for r in timing.itertuples() if r.timing_confirmed == True],
         "night_snpp_ref_mean_2017_21": _r(np.mean([ind.loc[y, "snpp_night"] for y in range(2017, 2022)]), 0),
         "day_snpp_ref_mean_2017_21": _r(np.mean([ind.loc[y, "snpp_day"] for y in range(2017, 2022)]), 0),
     }

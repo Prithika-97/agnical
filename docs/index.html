@@ -38,6 +38,12 @@ section{padding:72px 0;border-top:1px solid var(--rule)}
 .fig.flat{background:transparent;padding:0}
 .caption{font-size:.95rem;color:var(--muted);max-width:72ch;margin:10px 0 0}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.users{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 40px;margin-top:20px}
+.users h3{margin-top:18px}
+.users p{font-size:1rem;margin:0}
+@media (max-width:860px){.users{grid-template-columns:1fr}}
+.key{display:flex;flex-wrap:wrap;gap:4px 18px;font-family:var(--display);font-size:.88rem;color:var(--muted);margin:6px 0 0}
+.key i{display:inline-block;width:18px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
 .grid3 .fig{margin:0}
 @media (max-width:860px){.grid3{grid-template-columns:1fr} header.site nav{display:none}}
 /* day strip */
@@ -84,13 +90,13 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   <header class="site">
     <span>AgniCal</span>
     <nav aria-label="Sections">
-      <a href="#counts">The record</a><a href="#evidence">Evidence</a><a href="#calendar">Calendar</a><a href="#districts">Districts</a><a href="#method">Method</a>
+      <a href="#counts">The record</a><a href="#evidence">The test</a><a href="#floor">The floor</a><a href="#calendar">Calendar</a><a href="#users">Who it is for</a><a href="#method">Method</a>
     </nav>
   </header>
 
   <div class="hero">
     <h1>Punjab and Haryana's farm fires moved later in the day. The satellites that count them didn't.</h1>
-    <p class="dek" id="dek">NASA's fire satellites pass over Punjab and Haryana at fixed hours. AgniCal joins their 23-year record into one scale, and shows when the count stopped measuring how much is burned.</p>
+    <p class="dek" id="dek">NASA's fire satellites pass over Punjab and Haryana at fixed hours. AgniCal joins their 23-year record into one scale, tests the shift against the same satellites' view across the border, and puts a floor under what the count now misses.</p>
 
     <div class="strip-wrap" role="group" aria-labelledby="strip-title">
       <div class="strip-top">
@@ -130,14 +136,27 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
 <section id="evidence">
   <div class="wrap">
     <div class="prose">
-      <h2>Three signs the burning moved later</h2>
-      <p>Each of these comes straight from NASA's detections, with no model in between. The shaded band is the range seen from 2012 to 2022.</p>
+      <h2>Is the shift real, or did the satellites change?</h2>
+      <p>That farmers now burn later is not our discovery. Scientists at ISRO and NASA showed it in 2025 and 2026 with geostationary satellites, which watch all day. AgniCal asks what follows for the record everyone uses: can the polar satellites detect the change on their own, is it a real change in burning, and how much does the count now miss?</p>
+      <p>There is a reason to doubt it. Aqua's orbit drifted later and Terra's drifted earlier in the same years, and a satellite that looks at a different hour sees a different number of fires even if nothing on the ground changes. So we ran every test twice: once on Punjab and Haryana, and once on the farm fires just across the border in Pakistani Punjab, which the same satellites see on the same passes.</p>
     </div>
-    <div class="grid3">
-      <div class="fig"><h3>The late satellite sees more</h3><div id="ch-aqua" style="height:240px"></div><p class="caption" id="cap-aqua"></p></div>
-      <div class="fig"><h3>More fires still burning at night</h3><div id="ch-night" style="height:240px"></div><p class="caption" id="cap-night"></p></div>
-      <div class="fig"><h3>Mornings have gone quiet</h3><div id="ch-terra" style="height:240px"></div><p class="caption" id="cap-terra"></p></div>
+    <div class="key"><span><i style="background:var(--ember)"></i>Punjab and Haryana, India</span><span><i style="background:var(--sat)"></i>Punjab, Pakistan (border strip)</span><span>Each line is divided by its own 2012–2022 average, so 1 means no change.</span></div>
+    <div class="grid3" style="margin-top:14px">
+      <div class="fig"><h3>The late satellite sees more, on one side only</h3><div id="ch-aqua" style="height:240px"></div><p class="caption" id="cap-aqua"></p></div>
+      <div class="fig"><h3>More fires still burning at night, on one side only</h3><div id="ch-night" style="height:240px"></div><p class="caption" id="cap-night"></p></div>
+      <div class="fig"><h3>A signal we threw out</h3><div id="ch-terra" style="height:240px"></div><p class="caption" id="cap-terra"></p></div>
     </div>
+    <div class="prose" style="margin-top:28px">
+      <h3>How much further the Indian side moved</h3>
+      <p class="small">Change in Punjab and Haryana divided by the change across the border. 1 would mean both sides changed alike, as a satellite effect would make them. Intervals are 95%, from resampling days.</p>
+    </div>
+    <div id="tbl-did"></div>
+    <div class="prose" style="margin-top:20px">
+      <p id="checks-text"></p>
+      <h3>The same test on four regions</h3>
+      <p class="small">A season is a timing break when both indicators leave the region's 2012–2022 range by more than three robust standard deviations.</p>
+    </div>
+    <div id="tbl-regions"></div>
 
     <div class="prose" style="margin-top:56px">
       <h2>When is the peak? As far as polar orbit can see</h2>
@@ -145,6 +164,17 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
     </div>
     <div class="fig"><div id="ch-peak" style="height:360px"></div></div>
     <p class="caption" id="peak-caption"></p>
+  </div>
+</section>
+
+<section id="floor">
+  <div class="wrap">
+    <div class="prose">
+      <h2>A floor under the real count</h2>
+      <p>Until 2022 Aqua and Suomi NPP looked at almost the same minute, and one Aqua fire matched a steady number of Suomi NPP fires. Aqua now looks about an hour and a half later. Converting its count with the old ratio gives what Suomi NPP would have counted at Aqua's hour. Burning peaks later still, so this is a floor, not an estimate of the total.</p>
+    </div>
+    <div class="fig"><div id="ch-floor" style="height:380px"></div></div>
+    <p class="caption" id="floor-caption"></p>
   </div>
 </section>
 
@@ -192,10 +222,25 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   <div class="wrap">
     <div class="prose">
       <h2>This season so far</h2>
-      <p id="live-lede">Suomi NPP stopped delivering data on 2 November 2026. NOAA-20 carries the same VIIRS instrument and has flown since 2018, so this chart uses NOAA-20 alone for every season, keeping the comparison like for like.</p>
+      <p id="live-lede"></p>
     </div>
     <div class="fig"><div id="ch-live" style="height:380px"></div></div>
     <p class="caption" id="live-caption"></p>
+  </div>
+</section>
+
+<section id="users">
+  <div class="wrap">
+    <div class="prose">
+      <h2>Who this is for</h2>
+      <p>Fire counts from these satellites are published daily in India and used to judge whether burning is falling. AgniCal's outputs are made for the people who publish and use those counts.</p>
+    </div>
+    <div class="users">
+      <div><h3>CREAMS laboratory, IARI</h3><p>Publishes the daily paddy-residue burning bulletin from these satellites. The timing-break flag and the late-view floor can be printed beside each season's count, using data the laboratory already holds.</p></div>
+      <div><h3>Commission for Air Quality Management, state pollution boards</h3><p>Use year-on-year counts to judge districts. In flagged seasons a district's count is not comparable with its count before 2023; the calendar tool marks these seasons for every district.</p></div>
+      <div><h3>Air-quality forecasters for Delhi</h3><p>Emission inputs built from early-afternoon fire counts understate smoke in flagged seasons. The floor gives a minimum scaling, season by season.</p></div>
+      <div><h3>Researchers and journalists</h3><p>The harmonized 2003–2025 record, with uncertainty and flags, is one file: <a href="data/agnical_record.csv">agnical_record.csv</a>. The method is not tied to this region: the code takes a download box and a border file, and the same timing test ran unchanged on all four regions above.</p></div>
+    </div>
   </div>
 </section>
 
@@ -204,14 +249,16 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
     <div class="prose">
       <h2>How AgniCal works</h2>
       <ol class="method">
-        <li><b>Data.</b> Every active-fire detection from NASA FIRMS for MODIS (Terra, Aqua; 2003–2026) and VIIRS (Suomi NPP, NOAA-20, NOAA-21), cut to the official borders of Punjab and Haryana and their districts. Low-confidence and non-vegetation detections are removed.</li>
+        <li><b>Data.</b> Every active-fire detection from NASA FIRMS for MODIS (Terra, Aqua; 2003–2026) and VIIRS (Suomi NPP, NOAA-20, NOAA-21), cut to the borders of Punjab and Haryana and their districts. Detections in the rest of the download box are kept as comparison regions. Low-confidence and non-vegetation detections are removed.</li>
         <li><b>One scale.</b> Detections are gridded to 0.1° cells and 8-day periods. A gradient-boosted model with a Poisson loss learns how many Suomi NPP detections a cell has, given MODIS evidence: Terra and Aqua day and night counts, fire radiative power, neighbouring cells and adjacent periods. It is trained only on 2012–2022, before Aqua's orbit drifted, and checked by leaving out one whole season at a time.</li>
         <li><b>Time of day.</b> Each satellite pass is a snapshot at a known hour. Conditioning on each day's total removes how much burned and leaves the shape of the day's burning, estimated with a day-matched Poisson model and a day-level bootstrap.</li>
-        <li><b>Timing breaks.</b> A season is flagged when at least two of the three model-free indicators leave the 2012–2022 range by more than three robust standard deviations. In flagged seasons, counts from early-afternoon satellites are shown but not compared with earlier years.</li>
+        <li><b>Timing breaks.</b> Two indicators need no model: Aqua fires per Suomi NPP fire, and the share of Suomi NPP fires seen on its night pass. A season is flagged when both leave the 2012–2022 range by more than three robust standard deviations, and confirmed when the study area also moved further than the comparison region on both (95% interval above 1). In flagged seasons, counts are shown but not compared with earlier years.</li>
+        <li><b>Floor.</b> Aqua's daytime count times the 2012–2022 Suomi NPP-to-Aqua ratio. The range uses the lowest and highest yearly ratio of those eleven seasons.</li>
       </ol>
       <h3 style="margin-top:28px">Validation</h3>
       <p class="small">Leave-one-season-out over 2012–2022, whole study area. Lower is better.</p>
       <div id="tbl-val"></div>
+      <p class="small" id="val-note"></p>
       <h3 style="margin-top:28px">What happens when MODIS drifts</h3>
       <p class="small">Model trained on 2012–2022, then asked to predict later seasons from MODIS alone.</p>
       <div id="tbl-drift"></div>
@@ -219,7 +266,10 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
       <ul>
         <li>Active-fire detections are snapshots, not burned area. Cloud, haze and fires that start and end between passes are missed by every polar satellite.</li>
         <li>Polar satellites cannot measure burning after about 15:00. Where the peak lies beyond that, AgniCal reports only how late it is at least. A full correction needs all-day geostationary data (Meteosat-9 over the Indian Ocean, INSAT-3D/3DR, GEO-KOMPSAT-2A), which is the next layer to add.</li>
-        <li>Aqua's drift also changes its sun and viewing angles, which could affect what it detects. A shift in burning time is the most likely explanation because three independent indicators and two geostationary studies agree, but the Aqua ratio alone would not prove it.</li>
+        <li>The comparison region is a narrow strip of Pakistani Punjab inside the download box, with about a tenth of the study area's fires. It controls for the satellites, not for weather or crop calendar differences across the border.</li>
+        <li>The two indicators are not fully independent: both rest on Suomi NPP's daytime count. The night share uses Suomi NPP alone, so it is unaffected by Aqua's or Terra's drift.</li>
+        <li>The floor assumes the 2012–2022 Aqua-to-Suomi NPP ratio would still hold if both looked at the same hour. Across the border, where burning did not shift, the ratio stayed at its old level through Aqua's drift, which supports this.</li>
+        <li>We could not obtain geostationary fire data during the hackathon, so the peak hours of 16:00–18:00 are quoted from published studies, not computed here.</li>
         <li>District borders are from 2021, before Malerkotla and Charkhi Dadri were created; their fires are counted under the districts they were formed from.</li>
         <li>Near-real-time 2026 files carry no fire-type field, so a few static heat sources may remain in this season's counts.</li>
       </ul>
@@ -256,21 +306,22 @@ const KH = 'Kharif (paddy residue, Oct-Nov)', RB = 'Rabi (wheat residue, Apr-May
 
 async function j(name){ const r = await fetch('data/' + name); if (!r.ok) throw new Error(name); return r.json(); }
 
-Promise.all(['summary.json','timing.json','record.json','calendar.json','districts.geojson','live.json','validation.json'].map(j))
-  .then(([S, T, R, CAL, GEO, LIVE, VAL]) => {
+Promise.all(['summary.json','timing.json','record.json','calendar.json','districts.geojson','live.json','validation.json','controls.json'].map(j))
+  .then(([S, T, R, CAL, GEO, LIVE, VAL, CT]) => {
     window._d = {S, T, R, CAL, GEO, LIVE, VAL};
     const ty = Object.fromEntries(T.years.map(r => [r.year, r]));
     initStrip(S, T, ty);
     drawRecord(S, R, ty);
-    drawEvidence(S, T, ty);
+    drawEvidence(S, T, ty, CT);
+    drawFloor(S, CT);
     drawPeak(S, T, ty);
     initCalendar(CAL, R, ty);
     initMap(GEO);
     drawLive(LIVE);
     drawTables(VAL);
     document.getElementById('data-end').textContent = 'Data through ' + S.data_end + '.';
-    document.getElementById('pub-sources').innerHTML = 'Published peak-hour estimates used as outside checks: ' +
-      [...new Map(T.published.map(p => [p.url, p])).values()].map(p => `<a href="${p.url}">${p.label}</a>`).join('; ') + '.';
+    document.getElementById('pub-sources').innerHTML = 'Earlier work this builds on, used here as outside checks: ' +
+      T.sources.map(p => `<a href="${p.url}">${p.text}</a>`).join(' ');
   })
   .catch(e => { document.getElementById('dek').textContent = 'The data files could not be loaded (' + e.message + '). Serve this folder over HTTP, for example with: python -m http.server'; });
 
@@ -397,29 +448,63 @@ function drawRecord(S, R, ty){
   document.getElementById('counts-lede').textContent =
     `Suomi NPP counted ${fmt(k[py])} paddy-season fires in Punjab and Haryana in ${py}, and ${fmt(k[2025])} in 2025: a ${Math.abs(S.snpp_drop_peak_to_2025_pct)}% fall. Read at face value, paddy burning has almost stopped. But the count only shows what a satellite sees at about 13:30.`;
   document.getElementById('record-caption').textContent =
-    `Error bars on rebuilt seasons are the 10th–90th percentile of the model's errors when a whole season was left out. Hatched seasons (${S.timing_break_years.join(', ')}) are counted correctly, but burning had moved outside the satellites' viewing hours, so they are not comparable with the seasons before.`;
+    `Error bars on rebuilt seasons are the 10th–90th percentile of the model's errors when a whole season was left out. Hatched seasons (${S.timing_break_years.join(', ')}) are counted correctly but flagged as timing breaks: the count is not comparable with the seasons before. ${S.timing_confirmed_years.join(' and ')} are also confirmed against the comparison region across the border.`;
 }
 
-/* ---------- three indicators ---------- */
-function drawEvidence(S, T, ty){
-  const yrs = T.years.filter(r => r.year >= 2012 && r.year <= 2025);
-  const band = (vals) => { const b = vals.filter((v, i) => yrs[i].year <= 2022 && v != null); return [Math.min(...b), Math.max(...b)]; };
-  const mini = (id, key, color, yTitle, tick) => {
-    const v = yrs.map(r => r[key]);
-    const [lo, hi] = band(v);
-    Plotly.newPlot(id, [{type:'scatter', mode:'lines+markers', x:yrs.map(r => r.year), y:v, line:{color, width:2.5}, marker:{size:6, color:yrs.map(r => r.timing_break ? C.dusk : color)},
-      hovertemplate:'%{x}: %{y:' + tick + '}<extra></extra>'}],
-      {...BASE, margin:{l:48, r:8, t:6, b:30}, showlegend:false,
-       shapes:[{type:'rect', xref:'paper', x0:0, x1:1, y0:lo, y1:hi, fillcolor:'rgba(94,107,122,0.12)', line:{width:0}}],
-       yaxis:{...BASE.yaxis, tickformat:tick, title:{text:yTitle, font:{size:12}}}, xaxis:{...BASE.xaxis, dtick:3}}, CFG);
+/* ---------- evidence with comparison region ---------- */
+function drawEvidence(S, T, ty, CT){
+  const reg = name => CT.regions.filter(r => r.region === name && r.year <= 2025);
+  const A = reg(CT.study), B = reg(CT.control);
+  const mini = (id, key, tick, log) => {
+    const tr = (rows, color, name) => ({type:'scatter', mode:'lines+markers', x:rows.map(r => r.year), y:rows.map(r => r[key]), name,
+      line:{color, width:2.5}, marker:{size:5}, hovertemplate:name + ', %{x}: %{y:' + tick + '}× its 2012–22 level<extra></extra>'});
+    Plotly.newPlot(id, [tr(B, C.sat, 'Pakistan side'), tr(A, C.ember, 'Indian side')],
+      {...BASE, margin:{l:44, r:8, t:6, b:30}, showlegend:false,
+       shapes:[{type:'line', xref:'paper', x0:0, x1:1, y0:1, y1:1, line:{color:C.muted, width:1, dash:'dot'}}],
+       yaxis:{...BASE.yaxis, ...(log ? {type:'log', tickvals:[0.3,1,3,10,30], ticktext:['0.3','1','3','10','30']} : {}), title:{text:'× 2012–22 level', font:{size:12}}}, xaxis:{...BASE.xaxis, dtick:3}}, CFG);
   };
-  mini('ch-aqua', 'aqua_over_snpp', C.sat, 'Aqua fires per Suomi NPP fire', '.2f');
-  mini('ch-night', 'night_share', C.dusk, 'Share seen on night pass', '.1%');
-  mini('ch-terra', 'terra_over_aqua', C.ember, 'Morning (Terra) per afternoon (Aqua)', '.2f');
-  const r22 = ty[2022], r24 = ty[2024], r25 = ty[2025];
-  document.getElementById('cap-aqua').textContent = `Aqua's orbit drifted from ${hhmm(r22.aqua_time_ist)} (2022) to ${hhmm(r25.aqua_time_ist)} (2025). Looking later, it now sees ${r25.aqua_over_snpp_x_baseline.toFixed(1)}× as many fires per Suomi NPP fire as in 2012–22.`;
-  document.getElementById('cap-night').textContent = `Fires still burning at the ~01:30 pass were ${(100 * r22.night_share).toFixed(1)}% of Suomi NPP's count in 2022 and ${(100 * r25.night_share).toFixed(1)}% in 2025; in raw numbers, ${fmt(r22.snpp_night)} then ${fmt(r25.snpp_night)}, while daytime counts collapsed.`;
-  document.getElementById('cap-terra').textContent = `Terra passes in the late morning. Its count per Aqua fire fell to ${r25.terra_over_aqua.toFixed(3)} in 2025, ${Math.round(1 / r25.terra_over_aqua_x_baseline)}× below the 2012–22 level: almost nothing burns before noon now.`;
+  mini('ch-aqua', 'aqua_over_snpp_x_baseline', '.2f', false);
+  mini('ch-night', 'night_share_x_baseline', '.1f', true);
+  mini('ch-terra', 'terra_over_aqua_x_baseline', '.2f', false);
+  const last = rows => rows.find(r => r.year === 2025), a25 = last(A), b25 = last(B), r22 = ty[2022], r25 = ty[2025];
+  const dd = k => CT.did.find(r => r.indicator === k && r.year === 2025), dA = dd('aqua_over_snpp'), dN = dd('night_share');
+  document.getElementById('cap-aqua').textContent = `Aqua drifted from ${hhmm(r22.aqua_time_ist)} (2022) to ${hhmm(r25.aqua_time_ist)} (2025). On the Indian side it now sees ${dA.study_x_baseline.toFixed(1)}× as many fires per Suomi NPP fire as before. Across the border, with the same drift, the ratio is ${dA.control_x_baseline.toFixed(1)}× its old level.`;
+  document.getElementById('cap-night').textContent = `Share of Suomi NPP fires seen on the ~01:30 pass, log scale. Indian side: ${dN.study_x_baseline.toFixed(0)}× its old level (${fmt(a25.snpp_night)} night fires in 2025 while daytime counts collapsed). Pakistan side: ${dN.control_x_baseline.toFixed(1)}×. This test uses one satellite whose orbit did not drift.`;
+  document.getElementById('cap-terra').textContent = `Morning (Terra) fires per afternoon (Aqua) fire fell to ${a25.terra_over_aqua_x_baseline.toFixed(2)}× on the Indian side, which looks like proof that mornings went quiet. It fell to ${b25.terra_over_aqua_x_baseline.toFixed(2)}× across the border too. Both satellites drifted, so this is a satellite effect and AgniCal does not use it.`;
+
+  const nm = {aqua_over_snpp:'Aqua fires per Suomi NPP fire', night_share:'Share seen on the night pass'};
+  let h = '<table><thead><tr><th>Indicator</th><th>Season</th><th class="num">Indian side, × its old level</th><th class="num">Pakistan side, × its old level</th><th class="num">Indian ÷ Pakistan</th><th class="num">95% interval</th><th>Reading</th></tr></thead><tbody>';
+  CT.did.forEach(r => { h += `<tr><td>${nm[r.indicator]}</td><td>${r.year}</td><td class="num">${r.study_x_baseline.toFixed(2)}</td><td class="num">${r.control_x_baseline.toFixed(2)}</td><td class="num">${r.ratio.toFixed(2)}</td><td class="num">${r.ratio_lo.toFixed(2)}–${r.ratio_hi.toFixed(2)}</td><td>${r.ratio_lo > 1 ? 'Indian side moved further' : 'Not distinguishable'}</td></tr>`; });
+  document.getElementById('tbl-did').innerHTML = h + '</tbody></table>';
+
+  const n25 = CT.nadir.find(r => r.year === 2025);
+  const vw = CT.viirs_window, vb = vw.filter(r => r.year <= 2022).map(r => r.log_rise_per_h), v25 = vw.find(r => r.year === 2025);
+  const aq23 = CT.did.find(r => r.indicator === 'aqua_over_snpp' && r.year === 2023);
+  document.getElementById('checks-text').innerHTML = `<b>Three more checks.</b> Viewing angle: using only detections made close to straight down, the Aqua ratio in 2025 is ${n25.near_nadir_x_baseline.toFixed(1)}× its old level, against ${n25.all_x_baseline.toFixed(1)}× with all detections, so angle does not explain it. ` +
+    `A test that found nothing: on days when VIIRS itself passes both before and after 13:30, the rise between the two looks was ${v25.log_rise_per_h.toFixed(2)} per hour (log scale) in 2025, inside its 2012–2022 range of ${Math.min(...vb).toFixed(2)} to ${Math.max(...vb).toFixed(2)}. What still burns at midday keeps its old shape; the change lies after the satellites' window, which fits a new late-afternoon burst more than a gradual slide. ` +
+    `And 2023 is unsettled: Aqua's ratio rose as much across the border (Indian ÷ Pakistan ${aq23.ratio.toFixed(2)}, interval ${aq23.ratio_lo.toFixed(2)}–${aq23.ratio_hi.toFixed(2)}), so only the night share separates the two sides that year.`;
+
+  const names = [...new Set(CT.regions.map(r => r.region))].sort((x, y) => (y === CT.study) - (x === CT.study) || (y === CT.control) - (x === CT.control));
+  let t = '<table><thead><tr><th>Region</th><th class="num">Suomi NPP day fires, 2025</th><th class="num">Change from its 2012–22 average</th><th>2023</th><th>2024</th><th>2025</th></tr></thead><tbody>';
+  const lab = r => r ? (r.timing_break ? 'Timing break' : (r.n_flags === 1 ? 'One indicator out' : 'No break')) : '–';
+  names.forEach(n => { const rows = CT.regions.filter(r => r.region === n), g = y => rows.find(r => r.year === y);
+    const base = rows.filter(r => r.year <= 2022).reduce((s, r) => s + r.snpp_day, 0) / rows.filter(r => r.year <= 2022).length;
+    t += `<tr><td>${n}</td><td class="num">${fmt(g(2025).snpp_day)}</td><td class="num">${pct((g(2025).snpp_day / base - 1) * 100)}</td><td>${lab(g(2023))}</td><td>${lab(g(2024))}</td><td>${lab(g(2025))}</td></tr>`; });
+  document.getElementById('tbl-regions').innerHTML = t + '</tbody></table><p class="small">Regions with under about 1,000 fires a season have only a handful of night detections, so a single flag there can be chance. Rajasthan\'s districts in the box border Punjab and Haryana.</p>';
+}
+
+/* ---------- the floor ---------- */
+function drawFloor(S, CT){
+  const L = CT.late_view.filter(r => r.year >= 2012 && r.year <= 2025);
+  Plotly.newPlot('ch-floor', [
+    {type:'bar', x:L.map(r => r.year), y:L.map(r => r.snpp_day), name:'Counted by Suomi NPP at ~13:40', marker:{color:C.ember}, hovertemplate:'%{x}: %{y:,.0f} counted<extra></extra>'},
+    {type:'scatter', mode:'markers', x:L.map(r => r.year), y:L.map(r => r.aqua_as_snpp), name:"Aqua's count in Suomi NPP units (floor from 2023)", marker:{color:C.dusk, size:9, symbol:'diamond'},
+     error_y:{type:'data', symmetric:false, array:L.map(r => r.aqua_as_snpp_hi - r.aqua_as_snpp), arrayminus:L.map(r => r.aqua_as_snpp - r.aqua_as_snpp_lo), color:C.dusk, thickness:1.5},
+     customdata:L.map(r => hhmm(r.aqua_time_ist)), hovertemplate:'%{x}: %{y:,.0f} (Aqua looked at %{customdata})<extra></extra>'}],
+    {...BASE, legend:{orientation:'h', y:1.12, x:0}, yaxis:{...BASE.yaxis, title:{text:'Daytime fires, 1 Oct – 30 Nov'}}, xaxis:{...BASE.xaxis, dtick:1}}, CFG);
+  const pk = L.reduce((m, r) => r.snpp_day > m.snpp_day ? r : m), r = L.find(x => x.year === 2025), ba = CT.burnt_area;
+  const fall = v => Math.round((1 - v / pk.snpp_day) * 100);
+  document.getElementById('floor-caption').textContent = `Through 2022 the diamonds sit on the bars: the conversion works when both satellites look at the same hour. In 2025 Suomi NPP counted ${fmt(r.snpp_day)} daytime fires; at Aqua's hour (${hhmm(r.aqua_time_ist)}) it would have counted about ${fmt(r.aqua_as_snpp)} (${fmt(r.aqua_as_snpp_lo)}–${fmt(r.aqua_as_snpp_hi)}), ${r.factor.toFixed(1)}× as many. Against the ${pk.year} peak, the count says burning fell ${fall(r.snpp_day)}%; the floor says it fell by no more than about ${fall(r.aqua_as_snpp)}%. An outside measure that does not depend on the hour, burnt area mapped from Sentinel-2 by iFOREST, fell ${Math.round((1 - ba.to_km2 / ba.from_km2) * 100)}% in ${ba.state} between ${ba.from_year} and ${ba.to_year}.`;
 }
 
 /* ---------- peak hour ---------- */
@@ -576,13 +661,15 @@ function drawLive(L){
   const ser = L.series['Punjab + Haryana'] || {};
   const yrs = Object.keys(ser).map(Number).sort();
   if (!yrs.length || !ser[2026]) { document.getElementById('live').hidden = true; return; }
+  const sat = L.satellite || 'NOAA-20', ho = L.snpp_per_new;
+  document.getElementById('live-lede').textContent = `Suomi NPP stopped delivering data on 2 November 2026, in the middle of the season. ${sat} carries the same VIIRS instrument, so this chart uses ${sat} alone for every season it has flown, keeping the comparison like for like.` + (ho ? ` To continue the record in Suomi NPP units, multiply ${sat} daytime counts by ${ho.pooled.toFixed(2)} (yearly range ${ho.lo.toFixed(2)}–${ho.hi.toFixed(2)}, from days in ${ho.years[0]}–${ho.years[ho.years.length - 1]} when both observed).` : '');
   const idx = d => L.days.indexOf(d);
   const traces = yrs.map(y => {
     const s = ser[y], is26 = y === 2026, end = is26 && s.last ? idx(s.last) + 1 : L.days.length;
     return {type:'scatter', mode:'lines', x:L.days.slice(0, end).map(d => '2021-' + d), y:s.day.slice(0, end), name:String(y),
       line:{color:is26 ? C.ember : (y >= 2023 ? '#B9B1D6' : '#C9D1D9'), width:is26 ? 3.5 : 1.6}, hovertemplate:`${y}, %{x|%d %b}: %{y:,} fires so far<extra></extra>`};
   });
-  Plotly.newPlot('ch-live', traces, {...BASE, legend:{orientation:'v', x:1.01, y:1}, yaxis:{...BASE.yaxis, title:{text:'Daytime fires so far (NOAA-20)'}},
+  Plotly.newPlot('ch-live', traces, {...BASE, legend:{orientation:'v', x:1.01, y:1}, yaxis:{...BASE.yaxis, title:{text:'Daytime fires so far (' + sat + ')'}},
     xaxis:{...BASE.xaxis, tickformat:'%d %b', range:['2021-09-15', '2021-12-15']}}, CFG);
   const s26 = ser[2026];
   if (s26 && s26.last) {
@@ -590,7 +677,7 @@ function drawLive(L){
     const prev = yrs.filter(y => y < 2026).map(y => [y, ser[y].day[i]]);
     const n26 = s26.day[i], night26 = s26.night[i];
     const p25 = ser[2025] ? ser[2025].day[i] : null;
-    document.getElementById('live-caption').textContent = `By ${s26.last.replace('-', '/')} 2026 NOAA-20 had counted ${fmt(n26)} daytime and ${fmt(night26)} night-pass fires${p25 != null ? `, against ${fmt(p25)} daytime by the same date in 2025` : ''}. Grey lines are 2018–2022; violet lines are seasons with a timing break.`;
+    document.getElementById('live-caption').textContent = `By ${new Date('2026-' + s26.last).toLocaleDateString('en-GB', {day:'numeric', month:'long'})} 2026, ${sat} had counted ${fmt(n26)} daytime and ${fmt(night26)} night-pass fires${p25 != null ? `, against ${fmt(p25)} daytime by the same date in 2025` : ''}. Violet lines are earlier seasons with a timing break; grey lines, where present, are seasons before 2023.`;
   }
 }
 
@@ -603,6 +690,8 @@ function drawTables(V){
     h += `<tr><td>${lab[k] || k}</td><td class="num">${v.cell_poisson_deviance.toFixed(3)}</td><td class="num">${v.regional_corr.toFixed(3)}</td><td class="num">${v.seasons[KH].total_mape_pct.toFixed(1)}%</td><td class="num">${v.seasons[RB].total_mape_pct.toFixed(1)}%</td><td class="num">${v.seasons[KH].peak_exact_pct.toFixed(0)}% of seasons</td></tr>`;
   }
   document.getElementById('tbl-val').innerHTML = h + '</tbody></table>';
+  const pv = (V.metrics.total_error_test || {})[KH];
+  if (pv != null) document.getElementById('val-note').textContent = `For the paddy-season total, the simple regional ratio is as good as the model: the difference in yearly error is not statistically distinguishable (paired Wilcoxon p = ${pv.toFixed(2)}, 11 seasons), and all three methods miss the same seasons. The model earns its place elsewhere: on the map (cell-level deviance), on the date of the seasonal peak, and in the wheat season, where its total error is lower and the difference is distinguishable (p = ${((V.metrics.total_error_test || {})[RB] ?? NaN).toFixed(2)}).`;
   const d = V.drift_test.filter(r => r.season === KH);
   if (d.length) {
     let t = '<table><thead><tr><th>Season</th><th class="num">Counted by Suomi NPP</th><th class="num">Predicted from MODIS</th><th class="num">Error</th></tr></thead><tbody>';

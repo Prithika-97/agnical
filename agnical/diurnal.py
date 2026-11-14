@@ -179,23 +179,33 @@ def summarize(base_fit: dict, draws: pd.DataFrame, passes: pd.DataFrame) -> pd.D
     return out
 
 
+FLAG_INDICATORS = [("aqua_over_snpp", 1), ("night_share", 1)]
+# terra_over_aqua is reported but NOT used: Terra's own orbit drifted earlier after 2020, and
+# the ratio fell just as much in the comparison region across the border (agnical/controls.py),
+# so its fall is a satellite effect, not evidence about burning.
+DIAGNOSTIC_INDICATORS = [("terra_over_aqua", -1)]
+
+
 def timing_breaks(ind: pd.DataFrame, baseline=range(2012, 2023), k=3.0) -> pd.DataFrame:
     """Flag seasons whose model-free indicators leave the 2012-2022 envelope.
 
     For each indicator: how many times its baseline mean it is, and whether it is more than
-    k robust standard deviations (1.4826 * MAD) outside the baseline median."""
+    k robust standard deviations (1.4826 * MAD) outside the baseline median. A season is a
+    timing break when both flag indicators are outside, and on watch when one is."""
     out = ind[["year"]].copy()
     flags = []
-    for col, direction in [("aqua_over_snpp", 1), ("night_share", 1), ("terra_over_aqua", -1)]:
+    for col, direction in FLAG_INDICATORS + DIAGNOSTIC_INDICATORS:
         b = ind[ind["year"].isin(list(baseline))][col].dropna()
         med, mad = b.median(), 1.4826 * (b - b.median()).abs().median()
         scale = mad if mad > 0 else (b.std(ddof=1) if b.std(ddof=1) > 0 else abs(med) * 0.05 or 1e-9)
         out[f"{col}_x_baseline"] = ind[col] / b.mean()
         z = (ind[col] - med) / scale
         out[f"{col}_z"] = z
-        flags.append(direction * z > k)
+        if (col, direction) in FLAG_INDICATORS:
+            flags.append((direction * z > k).to_numpy())
     out["n_flags"] = np.sum(flags, axis=0)
-    out["timing_break"] = out["n_flags"] >= 2
+    out["timing_break"] = out["n_flags"] >= len(FLAG_INDICATORS)
+    out["timing_watch"] = out["n_flags"] == 1
     return out
 
 

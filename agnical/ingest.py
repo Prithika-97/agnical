@@ -41,6 +41,7 @@ def normalize(df: pd.DataFrame, source_file: str = "") -> pd.DataFrame:
         "satellite": sat.map(_MODIS_SAT if sensor == "MODIS" else _VIIRS_SAT).fillna(sat),
         "daynight": df["daynight"].astype(str).str.strip().str.upper(),
         "frp": pd.to_numeric(df["frp"], errors="coerce"),
+        "scan": pd.to_numeric(df["scan"], errors="coerce") if "scan" in df.columns else np.nan,
         "confidence": df["confidence"].astype(str).str.strip().str.lower(),
         "type": pd.to_numeric(df["type"], errors="coerce") if "type" in df.columns else np.nan,
     })
