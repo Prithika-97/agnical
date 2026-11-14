@@ -32,6 +32,9 @@ def test_detect_sensor():
     assert detect_sensor(raw_viirs().columns) == "VIIRS"
     with pytest.raises(ValueError):
         detect_sensor(["a", "b"])
+    # Real archive downloads name the VIIRS column 'brightness' and say SNPP in 'instrument'.
+    assert detect_sensor(["brightness", "instrument"], pd.Series(["SNPP", "SNPP"])) == "VIIRS"
+    assert detect_sensor(["brightness", "instrument"], pd.Series(["MODIS"])) == "MODIS"
 
 
 def test_filters_drop_low_conf_static_other_sats_and_outside_bbox():

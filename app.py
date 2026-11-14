@@ -70,7 +70,7 @@ an = anomaly(stats, year)
 cur = stats[stats["year"] == year].iloc[0]
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("Peak week", doy_to_label(cur["peak_doy"]),
-          f"{an['peak_shift_days']:+.0f} days vs typical" if an else None, delta_color="off",
+          (f"{an['peak_shift_days']:+.0f} days vs typical" if an['peak_shift_days'] else "same as typical") if an else None, delta_color="off",
           help="Middle of the 8-day period with the most detections.")
 c2.metric("Burning window", f"{doy_to_label(cur['start_doy'])}–{doy_to_label(cur['end_doy'])}",
           help="Dates between which the middle 80% of the season's detections fall.")
@@ -78,7 +78,7 @@ c3.metric("Season total", f"{cur['total']:,.0f}",
           f"{(cur['total'] / an['ref_mean'] - 1) * 100:+.0f}% vs other years" if an else None,
           delta_color="off", help="VIIRS 375 m-equivalent fire detections in the selected area.")
 if an:
-    c4.metric("This season is", an["label"], f"z = {an['z']:+.1f} vs {an['ref_years']}",
+    c4.metric("This season is", an["label"], f"{an['z']:+.1f} σ vs {an['ref_years']}",
               delta_color="off", help=f"Flagged when |z| exceeds {config.ANOMALY_Z}.")
 if cur["source"] == "reconstructed":
     st.info(f"{year} is before VIIRS existed. Its values are reconstructed from MODIS by the "

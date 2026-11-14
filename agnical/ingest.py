@@ -14,8 +14,13 @@ _VIIRS_SAT = {"N": "SNPP", "SNPP": "SNPP", "SUOMI NPP": "SNPP", "S-NPP": "SNPP",
 _MODIS_SAT = {"T": "Terra", "TERRA": "Terra", "A": "Aqua", "AQUA": "Aqua"}
 
 
-def detect_sensor(columns) -> str:
+def detect_sensor(columns, instrument=None) -> str:
+    """Identify the sensor. Archive downloads use 'brightness' for both sensors, so the
+    'instrument' column decides when it is present."""
     cols = {c.strip().lower() for c in columns}
+    if instrument is not None and len(instrument):
+        inst = str(pd.Series(instrument).dropna().astype(str).str.upper().mode().iat[0])
+        return "MODIS" if "MODIS" in inst else "VIIRS"
     if "bright_ti4" in cols:
         return "VIIRS"
     if "brightness" in cols:
@@ -26,7 +31,7 @@ def detect_sensor(columns) -> str:
 def normalize(df: pd.DataFrame, source_file: str = "") -> pd.DataFrame:
     """Map one raw FIRMS file onto a common schema."""
     df = df.rename(columns=lambda c: c.strip().lower())
-    sensor = detect_sensor(df.columns)
+    sensor = detect_sensor(df.columns, df["instrument"] if "instrument" in df.columns else None)
     sat = df["satellite"].astype(str).str.strip().str.upper()
     out = pd.DataFrame({
         "lat": pd.to_numeric(df["latitude"], errors="coerce"),

@@ -1,0 +1,145 @@
+{
+  "data": {
+    "files": [
+      "fire_archive_M-C61_846341.csv",
+      "fire_archive_SV-C2_846343.csv"
+    ],
+    "synthetic": false,
+    "rows_raw": 1977849,
+    "rows_kept": 1752409,
+    "by_sensor": {
+      "VIIRS": 1289594,
+      "MODIS": 462815
+    },
+    "date_range": {
+      "MODIS": [
+        "2003-01-01",
+        "2025-12-27"
+      ],
+      "VIIRS": [
+        "2012-01-20",
+        "2025-12-30"
+      ]
+    }
+  },
+  "bbox": [
+    73.8,
+    27.6,
+    77.6,
+    32.6
+  ],
+  "grid_res_deg": 0.1,
+  "fast_mode": false,
+  "metrics": {
+    "n_rows": 1146749,
+    "years": [
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "models": {
+      "global_ratio": {
+        "cell_rmse": 3.6370534896850586,
+        "cell_mae": 0.7355556488037109,
+        "cell_poisson_deviance": 6.1662116050720215,
+        "regional_corr": 0.9683968265112831,
+        "regional_rmse": 1244.2569580078125,
+        "seasons": {
+          "Kharif (paddy residue, Oct-Nov)": {
+            "total_mape_pct": 15.630867004394531,
+            "total_bias_pct": 10.42106819152832,
+            "total_rel_err_q10": -0.11218064352869987,
+            "total_rel_err_q90": 0.40048061609268215,
+            "peak_err_days_mean": 3.4285714285714284,
+            "peak_exact_pct": 57.14285714285714
+          },
+          "Rabi (wheat residue, Apr-May)": {
+            "total_mape_pct": 17.940561294555664,
+            "total_bias_pct": 1.2712059020996094,
+            "total_rel_err_q10": -0.24097696095705032,
+            "total_rel_err_q90": 0.30270967036485696,
+            "peak_err_days_mean": 2.2857142857142856,
+            "peak_exact_pct": 71.42857142857143
+          }
+        }
+      },
+      "cell_ratio": {
+        "cell_rmse": 3.5604255199432373,
+        "cell_mae": 0.7346757054328918,
+        "cell_poisson_deviance": 6.176910400390625,
+        "regional_corr": 0.9685252680931544,
+        "regional_rmse": 1231.31494140625,
+        "seasons": {
+          "Kharif (paddy residue, Oct-Nov)": {
+            "total_mape_pct": 15.35797119140625,
+            "total_bias_pct": 7.597634792327881,
+            "total_rel_err_q10": -0.13836058154702185,
+            "total_rel_err_q90": 0.372709929943085,
+            "peak_err_days_mean": 3.4285714285714284,
+            "peak_exact_pct": 57.14285714285714
+          },
+          "Rabi (wheat residue, Apr-May)": {
+            "total_mape_pct": 18.90981674194336,
+            "total_bias_pct": 3.3471617698669434,
+            "total_rel_err_q10": -0.23701345175504684,
+            "total_rel_err_q90": 0.3137940824031832,
+            "peak_err_days_mean": 2.2857142857142856,
+            "peak_exact_pct": 71.42857142857143
+          }
+        }
+      },
+      "gbm_poisson": {
+        "cell_rmse": 2.9571866166783085,
+        "cell_mae": 0.6142711200634766,
+        "cell_poisson_deviance": 0.8009879574291883,
+        "regional_corr": 0.981344095427753,
+        "regional_rmse": 951.3711797591874,
+        "seasons": {
+          "Kharif (paddy residue, Oct-Nov)": {
+            "total_mape_pct": 14.899941384590267,
+            "total_bias_pct": 7.704223600788958,
+            "total_rel_err_q10": -0.12883646316230982,
+            "total_rel_err_q90": 0.30827854867110516,
+            "peak_err_days_mean": 1.1428571428571428,
+            "peak_exact_pct": 85.71428571428571
+          },
+          "Rabi (wheat residue, Apr-May)": {
+            "total_mape_pct": 12.081772684270378,
+            "total_bias_pct": -0.908253602841654,
+            "total_rel_err_q10": -0.18579559484417796,
+            "total_rel_err_q90": 0.1804530740680933,
+            "peak_err_days_mean": 1.7142857142857142,
+            "peak_exact_pct": 78.57142857142857
+          }
+        }
+      }
+    }
+  },
+  "feature_importance": {
+    "m_nbr": 0.6243,
+    "m_aqua_day": 0.2028,
+    "m_count": 0.084,
+    "m_frp_sum": 0.0321,
+    "period": 0.0156,
+    "lat": 0.011,
+    "m_prev": 0.0098,
+    "lon": 0.0097,
+    "m_next": 0.0083,
+    "m_frp_max": 0.0011,
+    "m_aqua_night": 0.0005,
+    "m_terra_night": 0.0004,
+    "m_terra_day": 0.0004
+  },
+  "runtime_s": 211.8
+}
