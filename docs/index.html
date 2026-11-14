@@ -90,7 +90,7 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   <header class="site">
     <span>AgniCal</span>
     <nav aria-label="Sections">
-      <a href="#counts">The record</a><a href="#evidence">The test</a><a href="#floor">The floor</a><a href="#calendar">Calendar</a><a href="#users">Who it is for</a><a href="#method">Method</a>
+      <a href="#counts">The record</a><a href="#evidence">The test</a><a href="#india">All of India</a><a href="#floor">The floor</a><a href="#calendar">Calendar</a><a href="#users">Who it is for</a><a href="#method">Method</a>
     </nav>
   </header>
 
@@ -164,6 +164,23 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
     </div>
     <div class="fig"><div id="ch-peak" style="height:360px"></div></div>
     <p class="caption" id="peak-caption"></p>
+  </div>
+</section>
+
+<section id="india" hidden>
+  <div class="wrap">
+    <div class="prose">
+      <h2>The same test, for every state of India</h2>
+      <p id="india-lede"></p>
+    </div>
+    <div class="controls" style="margin-top:12px">
+      <span class="seg" role="group" aria-label="Season" id="india-seasons"></span>
+      <span class="seg" role="group" aria-label="Year" id="india-years"></span>
+    </div>
+    <div class="fig"><div id="ch-india"></div></div>
+    <p class="caption" id="india-caption"></p>
+    <div id="tbl-india"></div>
+    <p class="small" id="india-note"></p>
   </div>
 </section>
 
@@ -314,6 +331,7 @@ Promise.all(['summary.json','timing.json','record.json','calendar.json','distric
     drawRecord(S, R, ty);
     drawEvidence(S, T, ty, CT);
     drawFloor(S, CT);
+    Promise.all([j('india.json'), j('india_states.json')]).then(([IN, IG]) => initIndia(IN, IG)).catch(() => {});
     drawPeak(S, T, ty);
     initCalendar(CAL, R, ty);
     initMap(GEO);
@@ -491,6 +509,67 @@ function drawEvidence(S, T, ty, CT){
     const base = rows.filter(r => r.year <= 2022).reduce((s, r) => s + r.snpp_day, 0) / rows.filter(r => r.year <= 2022).length;
     t += `<tr><td>${n}</td><td class="num">${fmt(g(2025).snpp_day)}</td><td class="num">${pct((g(2025).snpp_day / base - 1) * 100)}</td><td>${lab(g(2023))}</td><td>${lab(g(2024))}</td><td>${lab(g(2025))}</td></tr>`; });
   document.getElementById('tbl-regions').innerHTML = t + '</tbody></table><p class="small">Regions with under about 1,000 fires a season have only a handful of night detections, so a single flag there can be chance. Rajasthan\'s districts in the box border Punjab and Haryana.</p>';
+}
+
+/* ---------- all of India ---------- */
+function initIndia(IN, IG){
+  const S = IN.summary; if (!IN.rows.length) return;
+  document.getElementById('india').hidden = false;
+  let season = S.seasons[0], year = S.years[S.years.length - 1];
+  const COL = {timing_break:C.ember, one_indicator:'#F2B38A', no_break:'#B9D6DA', too_few_fires:'#E3E7EB'};
+  const LAB = {timing_break:'Timing break: both indicators outside the state\'s 2012–22 range', one_indicator:'One indicator outside', no_break:'No break', too_few_fires:`Too few fires to test (under ${S.min_fires} a season)`};
+  const host = document.getElementById('ch-india'); host.style.height = 'auto';
+  host.innerHTML = '<svg id="india-svg" viewBox="0 0 800 760" role="img" aria-label="Map of Indian states by timing-break status"></svg><div class="legend" id="india-legend"></div><p id="india-info" class="small" aria-live="polite" style="min-height:2.6em;margin:8px 0 0"></p>';
+  const svg = document.getElementById('india-svg'), NS = 'http://www.w3.org/2000/svg', feats = IG.features;
+  let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+  const rings = f => (f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates);
+  feats.forEach(f => rings(f).forEach(poly => poly.forEach(ring => ring.forEach(([lo, la]) => { if (lo > 90 && la < 15) return;
+    minX = Math.min(minX, lo); maxX = Math.max(maxX, lo); minY = Math.min(minY, la); maxY = Math.max(maxY, la); }))));
+  const k = Math.cos((minY + maxY) / 2 * Math.PI / 180), W = 800, H = 760, pad = 12;
+  const sc = Math.min((W - 2 * pad) / ((maxX - minX) * k), (H - 2 * pad) / (maxY - minY));
+  const ox = (W - (maxX - minX) * k * sc) / 2, oy = (H - (maxY - minY) * sc) / 2;
+  const P = ([lo, la]) => [ox + (lo - minX) * k * sc, oy + (maxY - la) * sc];
+  const pathOf = f => rings(f).map(poly => poly.map(ring => 'M' + ring.map(c => P(c).map(v => v.toFixed(1)).join(',')).join('L') + 'Z').join('')).join('');
+  const paths = feats.map(f => { const e = document.createElementNS(NS, 'path'); e.setAttribute('d', pathOf(f)); e.setAttribute('stroke', '#fff'); e.setAttribute('stroke-width', '.8'); e.setAttribute('tabindex', '0'); svg.append(e); return e; });
+  const info = document.getElementById('india-info');
+  document.getElementById('india-legend').innerHTML = Object.keys(COL).map(k => `<span><i style="background:${COL[k]}"></i>${LAB[k]}</span>`).join('');
+  const x = v => v == null ? '–' : v.toFixed(1) + '×';
+  const sname = s => s.replace(' (', ', ').replace(')', '').replace('-', '–');
+  function row(state){ return IN.rows.find(r => r.state === state && r.season === season && r.year === year); }
+  function describe(state){ const r = row(state);
+    if (!r) return `${state}: no Suomi NPP daytime fires in this season.`;
+    if (r.status === 'too_few_fires') return `${state}: about ${fmt(r.base_fires)} fires a season in 2012–22, too few to test.`;
+    return `${state}: ${fmt(r.snpp_day)} daytime fires counted by Suomi NPP in ${year}. Aqua ratio ${x(r.aqua_x)} its old level, night share ${x(r.night_x)}. ${LAB[r.status].split(':')[0]}.`; }
+  function draw(){
+    feats.forEach((f, i) => { const st = f.properties.state, r = row(st);
+      paths[i].setAttribute('fill', COL[r ? r.status : 'too_few_fires']);
+      paths[i].innerHTML = ''; const t = document.createElementNS(NS, 'title'); t.textContent = describe(st); paths[i].append(t);
+      paths[i].onmouseenter = paths[i].onfocus = () => { info.textContent = describe(st); paths[i].setAttribute('stroke', C.ink); paths[i].setAttribute('stroke-width', '2'); };
+      paths[i].onmouseleave = paths[i].onblur = () => { paths[i].setAttribute('stroke', '#fff'); paths[i].setAttribute('stroke-width', '.8'); }; });
+    info.textContent = 'Point at or tab to a state for its numbers.';
+    const R = IN.rows.filter(r => r.season === season && r.year === year && r.status !== 'too_few_fires');
+    const hit = R.filter(r => r.n_flags >= 1).sort((a, b) => b.n_flags - a.n_flags || b.snpp_day - a.snpp_day);
+    const vs = (st, ind) => IN.versus.find(v => v.state === st && v.season === season && v.year === year && v.indicator === ind);
+    const cell = v => v && v.ratio != null ? `${v.ratio.toFixed(1)}× (${v.ratio_lo == null ? '–' : v.ratio_lo.toFixed(1)}–${v.ratio_hi == null ? '–' : v.ratio_hi.toFixed(1)})` : '–';
+    const verdict = r => { const c = IN.confirmed[`${r.state}|${season}|${year}`]; if (r.status !== 'timing_break') return c && c.n ? 'One indicator; watch' : 'Not separable from unflagged states';
+      return c && c.both ? 'Confirmed against unflagged states' : (c && c.n ? 'Break, confirmed on one indicator' : 'Break in its own record, not separable from unflagged states'); };
+    let h = '';
+    if (hit.length){ h = '<table><thead><tr><th>State</th><th class="num">Suomi NPP day fires</th><th class="num">Aqua ratio, × old level</th><th class="num">Night share, × old level</th><th class="num">Aqua ratio vs unflagged states</th><th class="num">Night share vs unflagged states</th><th class="num">Floor</th><th>Reading</th></tr></thead><tbody>';
+      hit.forEach(r => { h += `<tr><td>${r.state}</td><td class="num">${fmt(r.snpp_day)}</td><td class="num">${x(r.aqua_x)}</td><td class="num">${x(r.night_x)}</td><td class="num">${cell(vs(r.state, 'aqua_over_snpp'))}</td><td class="num">${cell(vs(r.state, 'night_share'))}</td><td class="num">${r.floor != null && r.floor > 1.2 ? r.floor.toFixed(1) + '× (' + r.floor_lo.toFixed(1) + '–' + r.floor_hi.toFixed(1) + ')' : '–'}</td><td>${verdict(r)}</td></tr>`; });
+      h += '</tbody></table>'; }
+    document.getElementById('tbl-india').innerHTML = h;
+    const nb = R.filter(r => r.status === 'timing_break').length;
+    document.getElementById('india-caption').textContent = `${sname(season)} ${year}: ${R.length} states have enough fires to test. ${nb} show a timing break, ${R.filter(r => r.status === 'one_indicator').length} have one indicator outside its range, ${R.filter(r => r.status === 'no_break').length} show no break.` + (hit.length ? ' "vs unflagged states" divides the state\'s change by the change in all states that show no flag this season, which are seen by the same satellites; the interval is 95%.' : '');
+  }
+  const seg = (id, items, get, set, label) => { const el = document.getElementById(id);
+    el.innerHTML = items.map(v => `<button type="button" aria-pressed="${v === get()}">${label(v)}</button>`).join('');
+    [...el.children].forEach((b, i) => b.addEventListener('click', () => { set(items[i]); [...el.children].forEach(c => c.setAttribute('aria-pressed', c === b)); draw(); })); };
+  seg('india-seasons', S.seasons, () => season, v => season = v, sname);
+  seg('india-years', S.years, () => year, v => year = v, String);
+  const d = S.data, nt = S.tested[S.seasons[0]];
+  document.getElementById('india-lede').textContent = `Punjab and Haryana are where the shift was reported. Is it happening anywhere else? AgniCal runs the two indicators on ${fmt(d.detections)} detections across India, for every state and three burning seasons. The comparison region changes too: each state is set against the states that show no flag, which are seen by the same drifting satellites.`;
+  document.getElementById('india-note').textContent = 'A state is tested when Suomi NPP counted at least ' + S.min_fires + ' daytime fires a season on average in 2012–2022. The floor is Aqua\'s later count in Suomi NPP units, shown where it exceeds the count by more than 20%. Seasons that cross the new year are labelled by the year they start.';
+  draw();
 }
 
 /* ---------- the floor ---------- */

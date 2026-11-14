@@ -16,7 +16,7 @@ import pandas as pd
 from . import config, controls, diurnal
 
 STATE_FILE = config.ROOT / "data" / "boundaries" / "india_states.geojson"
-REST = "Rest of India"
+REST = "States with no flag"
 # Burning seasons by day of year. Post-monsoon: paddy residue (north-west), also Odisha/MP.
 # Pre-monsoon: wheat residue and forest fires. Winter: sugarcane, shifting cultivation starts.
 SEASONS = {
@@ -135,13 +135,19 @@ def versus_rest(det: pd.DataFrame, ind: pd.DataFrame, years=(2023, 2024, 2025), 
     move than the rest of India, which is seen by the same drifting satellites? Day-level bootstrap."""
     hits = ind[ind["year"].isin(years) & (ind["n_flags"] >= 1)][["state", "season"]].drop_duplicates()
     out = []
+    flagged = {se: set(g["state"]) for se, g in hits.groupby("season")}
     for season, hs in hits.groupby("season"):
         d = season_slice(det.dropna(subset=["state"]), season)
         d = d.assign(date=pd.to_datetime(d["syear"].astype(str) + "-01-01")
                      + pd.to_timedelta((d["date"] - pd.to_datetime(d["date"].dt.year.astype(str) + "-01-01")).dt.days
                                        + np.where(d["date"].dt.year > d["syear"], 366, 0), unit="D"))
         for state in hs["state"]:
-            dd = d.assign(region=np.where(d["state"] == state, state, REST))
+            # control = every other state that shows no flag of its own in this season, so that a
+            # state is never compared with another one that is itself shifting
+            dd = d[(d["state"] == state) | ~d["state"].isin(flagged[season])]
+            dd = dd.assign(region=np.where(dd["state"] == state, state, REST))
+            if (dd["region"] == REST).sum() == 0:
+                continue
             r = _did(dd, state, years, n_boot, seed)
             out.append(r.assign(state=state, season=season))
     return pd.concat(out, ignore_index=True) if out else pd.DataFrame()
