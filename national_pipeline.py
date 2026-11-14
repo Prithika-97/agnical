@@ -54,6 +54,10 @@ def export(ind: pd.DataFrame, vs: pd.DataFrame, info: dict, out: Path, years=(20
         "tested": {s: int(((last["season"] == s) & last["testable"]).sum()) for s in national.SEASONS},
         "breaks": {s: sorted(last[(last["season"] == s) & (last["status"] == "timing_break")]["state"]) for s in national.SEASONS},
     }
+    if len(vs):
+        aq = vs[vs["indicator"] == "aqua_over_snpp"]
+        summary["drift_alone"] = {se: {int(y): _r(g["rest_x"].median(), 2) for y, g in d.groupby("year")}
+                                  for se, d in aq.groupby("season")}
     (out / "india.json").write_text(json.dumps({"summary": summary, "rows": rows, "versus": versus, "confirmed": conf}))
     return summary
 
@@ -67,7 +71,10 @@ def main():
     t0 = time.time()
     print("[1/4] Reading FIRMS files for India ...")
     det, info = load_firms(a.raw, bbox=INDIA_BBOX)
-    print(f"      {len(det):,} detections ({time.time() - t0:.0f}s)")
+    det["n"] = 1
+    for f in sorted(a.raw.glob("*_counts.csv.gz")):       # pre-counted Suomi NPP (scripts/reduce_snpp.py)
+        det = pd.concat([det, national.load_counted(f)], ignore_index=True)
+    print(f"      {int(det['n'].sum()):,} detections ({time.time() - t0:.0f}s)")
     print("[2/4] Assigning states ...")
     det = national.assign_state(det).dropna(subset=["state"])
     print("[3/4] Indicators, timing breaks and floors per state and season ...")
@@ -77,8 +84,8 @@ def main():
     ind.to_csv(config.OUT_DIR / "india_state_indicators.csv", index=False)
     vs.to_csv(config.OUT_DIR / "india_versus_rest.csv", index=False)
     print("[4/4] Writing site data ...")
-    meta = {"detections": int(len(det)), "first": str(det["date"].min().date()), "last": str(det["date"].max().date()),
-            "by_satellite": {k: int(v) for k, v in det.groupby("satellite").size().items()}}
+    meta = {"detections": int(det["n"].sum()), "first": str(det["date"].min().date()), "last": str(det["date"].max().date()),
+            "by_satellite": {k: int(v) for k, v in det.groupby("satellite")["n"].sum().items()}}
     s = export(ind, vs, meta, a.site)
     print(json.dumps(s["breaks"], indent=1))
     print(f"Done in {time.time() - t0:.0f}s")

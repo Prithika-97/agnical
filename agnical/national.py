@@ -71,9 +71,10 @@ def _counts(d: pd.DataFrame, by: list[str]) -> pd.DataFrame:
     snpp = (d["sensor"] == "VIIRS") & (d["satellite"] == "SNPP")
     aqua = (d["sensor"] == "MODIS") & (d["satellite"] == "Aqua")
     t = diurnal.to_ist_hours(d["time"])
+    w = d["n"].to_numpy() if "n" in d.columns else 1     # 'n' = detections per row, for pre-counted input
     g = pd.DataFrame({**{k: d[k] for k in by},
-                      "aqua_day": (aqua & day).astype(int), "snpp_day": (snpp & day).astype(int),
-                      "snpp_night": (snpp & ~day).astype(int), "snpp_all": snpp.astype(int),
+                      "aqua_day": (aqua & day).astype(int) * w, "snpp_day": (snpp & day).astype(int) * w,
+                      "snpp_night": (snpp & ~day).astype(int) * w, "snpp_all": snpp.astype(int) * w,
                       "aqua_t": t.where(aqua & day)}).groupby(by)
     out = g[["aqua_day", "snpp_day", "snpp_night", "snpp_all"]].sum()
     out["aqua_time_ist"] = g["aqua_t"].median()
@@ -196,3 +197,12 @@ def _did(d: pd.DataFrame, study: str, years, n_boot, seed) -> pd.DataFrame:
                          "ratio_lo": float(np.quantile(dr, 0.025)) if len(dr) > 20 else np.nan,
                          "ratio_hi": float(np.quantile(dr, 0.975)) if len(dr) > 20 else np.nan})
     return pd.DataFrame(rows)
+
+
+def load_counted(path: Path, sensor="VIIRS", satellite="SNPP", res=0.1) -> pd.DataFrame:
+    """Read detections pre-counted per cell, date and day/night (scripts/reduce_snpp.py), used when
+    the full download is too large to move. Each row stands for `n` detections at the cell centre."""
+    c = pd.read_csv(path)
+    return pd.DataFrame({"date": pd.to_datetime(c["date"]), "time": 0, "lat": (c["iy"] + 0.5) * res,
+                         "lon": (c["ix"] + 0.5) * res, "sensor": sensor, "satellite": satellite,
+                         "daynight": c["daynight"], "n": c["n"].astype(int)})

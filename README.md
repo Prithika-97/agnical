@@ -48,6 +48,22 @@ MODIS-VIIRS record that everyone uses, and answers with NASA's polar data alone:
   count says -95%; the floor says no more than about -83%. iFOREST's Sentinel-2 burnt area for
   Punjab fell 36% between 2022 and 2025.
 
+### All of India (`national_pipeline.py`, 8.0 million detections, 2003-2026)
+
+The same two indicators for every state and three burning seasons. Each state is compared with
+the states that show no flag, which are seen by the same drifting satellites.
+
+- **Post-monsoon 2025: of 13 states with enough fires to test, only Punjab and Haryana show a
+  timing break.** No state shows one in the pre-monsoon or winter season.
+- Against unflagged states, 2025: Punjab's Aqua ratio is 3.5x (95% interval 2.3-5.2) and its
+  night share 79x (47-128); Haryana's are 1.9x (1.3-2.4) and 29x (23-39).
+- With this larger control, 2023 is also confirmed for both states (Punjab Aqua ratio 1.4x,
+  1.1-1.7), which the narrow Pakistan strip could not settle.
+- **What the orbit drift does on its own**: in unflagged states Aqua's ratio stands at 1.13x
+  its 2012-2022 level in the 2025 post-monsoon season (1.06x pre-monsoon, 1.01x winter).
+- Watch list (one indicator only): Uttar Pradesh post-monsoon in all three years; Gujarat
+  pre-monsoon 2025 (Aqua ratio 2.1x unflagged states, 1.5-2.8); Haryana winter night share.
+
 ### Harmonization, validated honestly (leave one season out, 2012-2022)
 
 | Method | Cell deviance | Paddy total error | Wheat total error | Paddy peak period exact |
@@ -69,6 +85,7 @@ a factor of 1.03 (yearly range 1.01-1.12, 2023-2025).
 pip install -r requirements.txt
 # put NASA FIRMS archive CSVs in data/raw/ (MODIS C6.1 and VIIRS S-NPP, NOAA-20, NOAA-21)
 python pipeline.py            # about 3 minutes; writes data/processed, reports/ and docs/data
+python national_pipeline.py   # all-India run; needs FIRMS country downloads for India in data/raw_india/
 python -m http.server -d docs # then open http://localhost:8000
 pytest -q
 ```
@@ -92,11 +109,13 @@ by `regions.build_boundary_file` and `controls.build_region_file`.
 
 ## Limitations
 
+- In the all-India run, Suomi NPP detections are pre-counted per 0.1 degree cell (`scripts/reduce_snpp.py`, to move the file over a slow connection) and assigned to the state of the cell centre, so a small share of fires near state borders is assigned to the neighbour. View angle and the VIIRS-only test are therefore not repeated nationally.
+
 - Active-fire detections are snapshots, not burned area; cloud, haze and short fires between passes are missed.
 - Polar satellites cannot see burning after about 15:15. The floor is a lower bound, not an estimate of the total. We did not obtain geostationary fire data during the hackathon; the 16:00-18:00 peak is quoted from published studies.
 - The comparison region is a narrow strip with about a tenth of the study area's fires. It controls for the satellites, not for weather or crop-calendar differences.
 - Both indicators use Suomi NPP's daytime count, so they are not fully independent.
-- Only one region is analysed. The timing test ran unchanged on four regions in the download box, but those are neighbours, not a global sample.
+- The timing test covers India only. It has not been run on other countries.
 - District borders are from 2021 (before Malerkotla and Charkhi Dadri).
 - 2026 near-real-time files have no fire-type field, so a few static heat sources may remain.
 

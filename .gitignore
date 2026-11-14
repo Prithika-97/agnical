@@ -7,3 +7,4 @@ data/synthetic/
 .pytest_cache/
 .DS_Store
 data/processed/*.parquet
+data/raw_india/

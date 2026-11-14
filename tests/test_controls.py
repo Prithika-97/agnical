@@ -50,3 +50,19 @@ def test_late_view_floor_matches_count_before_drift_and_exceeds_it_after():
 
 def test_terra_ratio_is_not_a_flag():
     assert "terra_over_aqua" not in [c for c, _ in D.FLAG_INDICATORS]
+
+
+def test_national_engine_flags_only_the_state_that_shifted():
+    from agnical import national as N
+    det = _det(np.random.default_rng(3)).rename(columns={"region": "state"})
+    more = _det(np.random.default_rng(4), shift_study=False)
+    more = more[more["region"] == K.PAKISTAN].assign(state="Third")
+    det = pd.concat([det, more.drop(columns="region")], ignore_index=True)
+    ind = N.state_indicators(det)
+    last = ind[(ind["year"] == 2025) & (ind["season"] == "Post-monsoon (Oct-Nov)")].set_index("state")
+    assert last.loc[K.STUDY, "status"] == "timing_break"
+    assert last.loc["Third", "status"] != "timing_break"
+    assert last.loc[K.STUDY, "floor_factor"] > 2
+    vs = N.versus_rest(det, ind, years=(2025,), n_boot=60)
+    v = vs[(vs["state"] == K.STUDY)].set_index("indicator")
+    assert (v["ratio_lo"] > 1.5).all()

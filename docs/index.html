@@ -256,7 +256,7 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
       <div><h3>CREAMS laboratory, IARI</h3><p>Publishes the daily paddy-residue burning bulletin from these satellites. The timing-break flag and the late-view floor can be printed beside each season's count, using data the laboratory already holds.</p></div>
       <div><h3>Commission for Air Quality Management, state pollution boards</h3><p>Use year-on-year counts to judge districts. In flagged seasons a district's count is not comparable with its count before 2023; the calendar tool marks these seasons for every district.</p></div>
       <div><h3>Air-quality forecasters for Delhi</h3><p>Emission inputs built from early-afternoon fire counts understate smoke in flagged seasons. The floor gives a minimum scaling, season by season.</p></div>
-      <div><h3>Researchers and journalists</h3><p>The harmonized 2003–2025 record, with uncertainty and flags, is one file: <a href="data/agnical_record.csv">agnical_record.csv</a>. The method is not tied to this region: the code takes a download box and a border file, and the same timing test ran unchanged on all four regions above.</p></div>
+      <div><h3>Researchers and journalists</h3><p>The harmonized 2003–2025 record, with uncertainty and flags, is one file: <a href="data/agnical_record.csv">agnical_record.csv</a>. The method is not tied to one region: the same timing test ran unchanged on every state of India.</p></div>
     </div>
   </div>
 </section>
@@ -567,7 +567,7 @@ function initIndia(IN, IG){
   seg('india-seasons', S.seasons, () => season, v => season = v, sname);
   seg('india-years', S.years, () => year, v => year = v, String);
   const d = S.data, nt = S.tested[S.seasons[0]];
-  document.getElementById('india-lede').textContent = `Punjab and Haryana are where the shift was reported. Is it happening anywhere else? AgniCal runs the two indicators on ${fmt(d.detections)} detections across India, for every state and three burning seasons. The comparison region changes too: each state is set against the states that show no flag, which are seen by the same drifting satellites.`;
+  document.getElementById('india-lede').textContent = `Punjab and Haryana are where the shift was reported. Is it happening anywhere else? AgniCal runs the two indicators on ${fmt(d.detections)} detections across India, for every state and three burning seasons. The comparison region changes too: each state is set against the states that show no flag, which are seen by the same drifting satellites.` + (() => { const b = S.breaks[S.seasons[0]], da = (S.drift_alone || {})[S.seasons[0]], y = S.years[S.years.length - 1]; return ` The answer for ${y}: of ${S.tested[S.seasons[0]]} states with enough post-monsoon fires to test, ${b.length ? 'only ' + b.join(' and ') + (b.length === 1 ? ' shows' : ' show') : 'none shows'} a timing break, and no state shows one in the other two seasons.` + (da && da[y] ? ` In the states with no flag, Aqua's ratio stands at ${da[y].toFixed(2)}× its old level: that is what the orbit drift does on its own.` : ''); })();
   document.getElementById('india-note').textContent = 'A state is tested when Suomi NPP counted at least ' + S.min_fires + ' daytime fires a season on average in 2012–2022. The floor is Aqua\'s later count in Suomi NPP units, shown where it exceeds the count by more than 20%. Seasons that cross the new year are labelled by the year they start.';
   draw();
 }
