@@ -43,7 +43,7 @@ def test_filters_drop_low_conf_static_other_sats_and_outside_bbox():
     m = kept[kept.sensor == "MODIS"]
     v = kept[kept.sensor == "VIIRS"]
     assert len(m) == 1 and m.iloc[0]["satellite"] == "Terra"  # low conf and type=2 removed
-    assert len(v) == 1 and v.iloc[0]["satellite"] == "SNPP"   # NOAA-20 and out-of-box removed
+    assert set(v["satellite"]) == {"SNPP", "NOAA20"}            # out-of-box point removed
 
 
 def test_nrt_dropped_when_standard_exists():
@@ -76,7 +76,7 @@ def toy_detections(rng, years=range(2010, 2016)):
 
 def test_panel_and_validity():
     det = toy_detections(np.random.default_rng(0))
-    p = build_panel(det, bbox=BBOX, modis_first_year=2010, end_date="2015-12-31")
+    p = build_panel(det, bbox=BBOX, modis_first_year=2010, end_date="2015-12-31", viirs_end="2015-12-31")
     assert p.groupby(["ix", "iy"]).size().nunique() == 1          # full panel per cell
     assert not p.loc[p.year == 2011, "v_valid"].any()
     assert p.loc[(p.year == 2013), "v_valid"].all()
@@ -85,7 +85,7 @@ def test_panel_and_validity():
 
 def test_cv_harmonize_and_calendar():
     det = toy_detections(np.random.default_rng(1))
-    p = build_panel(det, bbox=BBOX, modis_first_year=2010, end_date="2015-12-31")
+    p = build_panel(det, bbox=BBOX, modis_first_year=2010, end_date="2015-12-31", viirs_end="2015-12-31")
     cv = cross_validate(p, fast=True, log=lambda *_: None)
     res = evaluate(cv)
     assert set(res["models"]) == {"global_ratio", "cell_ratio", "gbm_poisson"}

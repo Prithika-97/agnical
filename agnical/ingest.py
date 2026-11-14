@@ -68,10 +68,11 @@ def apply_filters(det: pd.DataFrame, bbox=config.BBOX,
 
 
 def drop_nrt_overlap(det: pd.DataFrame) -> pd.DataFrame:
-    """Where standard (sp) and near-real-time (nrt) data cover the same day, keep sp."""
-    sp_days = det.loc[det["product"] == "sp", ["sensor", "date"]].drop_duplicates()
+    """Where standard (sp) and near-real-time (nrt) data cover the same day for the same
+    satellite, keep sp."""
+    sp_days = det.loc[det["product"] == "sp", ["sensor", "satellite", "date"]].drop_duplicates()
     sp_days["_sp"] = True
-    det = det.merge(sp_days, on=["sensor", "date"], how="left")
+    det = det.merge(sp_days, on=["sensor", "satellite", "date"], how="left")
     det = det[(det["product"] == "sp") | det["_sp"].isna()]
     return det.drop(columns="_sp")
 

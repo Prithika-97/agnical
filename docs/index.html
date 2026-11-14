@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgniCal: when Punjab and Haryana burn, and when satellites look</title>
+<meta name="description" content="A consistent 2003-2026 crop-fire record for Punjab and Haryana from NASA MODIS and VIIRS, and evidence that burning moved later in the day than the satellites look.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root{
+  --paper:#EEF1F4; --panel:#FFFFFF; --ink:#1B2433; --muted:#5E6B7A; --rule:#CED6DE;
+  --ember:#E8590C; --ember-soft:#FFD9C2; --dusk:#5B4B8A; --dusk-soft:#E4DFF2; --sat:#127A8A;
+  --display:"Bricolage Grotesque", system-ui, sans-serif;
+  --body:"Source Serif 4", Georgia, serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:19px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--sat);text-underline-offset:2px}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--sat);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.prose{max-width:680px}
+h1,h2,h3{font-family:var(--display);line-height:1.08;letter-spacing:-0.015em;margin:0}
+h1{font-size:clamp(2.3rem,5.2vw,4.3rem);font-weight:800;max-width:18ch}
+h2{font-size:clamp(1.7rem,3.2vw,2.4rem);font-weight:700;margin-bottom:.6em;max-width:22ch}
+h3{font-size:1.15rem;font-weight:700;margin-bottom:.3em}
+p{margin:0 0 1em}
+.dek{font-size:1.2rem;color:var(--muted);max-width:60ch;margin-top:1.1rem}
+header.site{display:flex;justify-content:space-between;align-items:baseline;padding:22px 0 0;font-family:var(--display);font-weight:700;font-size:1.05rem}
+header.site nav a{font-weight:500;color:var(--ink);text-decoration:none;margin-left:22px;font-size:.95rem}
+header.site nav a:hover{color:var(--ember)}
+.hero{padding:56px 0 32px}
+section{padding:72px 0;border-top:1px solid var(--rule)}
+.fig{background:var(--panel);border-radius:14px;padding:20px 20px 10px;margin:28px 0 8px}
+.fig.flat{background:transparent;padding:0}
+.caption{font-size:.95rem;color:var(--muted);max-width:72ch;margin:10px 0 0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.grid3 .fig{margin:0}
+@media (max-width:860px){.grid3{grid-template-columns:1fr} header.site nav{display:none}}
+/* day strip */
+.strip-wrap{background:var(--panel);border-radius:18px;padding:22px 22px 14px;margin-top:40px}
+.strip-top{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;justify-content:space-between}
+.yearpick{display:flex;align-items:center;gap:14px;font-family:var(--display)}
+.yearpick output{font-size:2.6rem;font-weight:800;min-width:3.2ch;color:var(--ink)}
+.yearpick input{width:min(340px,60vw);accent-color:var(--ember)}
+.counts{display:flex;gap:28px;font-family:var(--display)}
+.counts div{display:flex;flex-direction:column}
+.counts b{font-size:1.6rem;font-weight:800;line-height:1}
+.counts span{font-size:.85rem;color:var(--muted);font-weight:500}
+.counts .night b{color:var(--dusk)}
+.counts .day b{color:var(--ember)}
+#strip{width:100%;height:auto;display:block;margin-top:8px}
+.strip-note{font-size:.95rem;color:var(--muted);margin:6px 0 0;min-height:3em}
+.legend{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:.88rem;color:var(--muted);font-family:var(--display);margin-top:10px}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:6px;vertical-align:baseline}
+/* tool */
+.controls{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;font-family:var(--display);font-size:.95rem}
+select{font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--rule);background:var(--panel);color:var(--ink)}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.seg button{font:inherit;border:0;background:transparent;padding:8px 14px;color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:22px 0 0;border-top:1px solid var(--rule)}
+.stats div{padding:14px 18px 6px 0}
+.stats dt{font-family:var(--display);font-size:.85rem;color:var(--muted);font-weight:500}
+.stats dd{margin:2px 0 0;font-family:var(--display);font-size:1.45rem;font-weight:700;line-height:1.15}
+.stats dd small{display:block;font-size:.85rem;font-weight:500;color:var(--muted);margin-top:3px}
+@media (max-width:760px){.stats{grid-template-columns:1fr 1fr}}
+.warn{background:var(--dusk-soft);border-left:4px solid var(--dusk);padding:12px 16px;border-radius:6px;font-size:.98rem;margin:18px 0 0}
+table{border-collapse:collapse;width:100%;font-size:.95rem;margin:12px 0 4px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule)}
+th{font-family:var(--display);font-weight:600;color:var(--muted);font-size:.85rem}
+td.num,th.num{text-align:right}
+ol.method{padding-left:1.2em} ol.method li{margin-bottom:.6em}
+footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);font-size:.92rem}
+.small{font-size:.92rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <span>AgniCal</span>
+    <nav aria-label="Sections">
+      <a href="#counts">The record</a><a href="#evidence">Evidence</a><a href="#calendar">Calendar</a><a href="#districts">Districts</a><a href="#method">Method</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <h1>Punjab and Haryana's farm fires moved later in the day. The satellites that count them didn't.</h1>
+    <p class="dek" id="dek">NASA's fire satellites pass over Punjab and Haryana at fixed hours. AgniCal joins their 23-year record into one scale, and shows when the count stopped measuring how much is burned.</p>
+
+    <div class="strip-wrap" role="group" aria-labelledby="strip-title">
+      <div class="strip-top">
+        <div class="yearpick">
+          <label for="year" class="small" id="strip-title">Paddy season</label>
+          <input id="year" type="range" min="2012" max="2025" step="1" value="2012" aria-describedby="strip-note">
+          <output id="year-out" for="year">2012</output>
+        </div>
+        <div class="counts" aria-live="polite">
+          <div class="day"><b id="c-day">–</b><span>daytime fires counted, Suomi NPP</span></div>
+          <div class="night"><b id="c-night">–</b><span>fires seen on its night pass</span></div>
+        </div>
+      </div>
+      <svg id="strip" viewBox="0 0 1000 270" role="img" aria-label="A day from 6 in the morning to 2 at night, showing when each satellite looks and when fires burn"></svg>
+      <div class="legend">
+        <span><i style="background:var(--ember)"></i>Fires the satellites can see, by hour</span>
+        <span><i style="background:var(--sat)"></i>A satellite's viewing time that season</span>
+        <span><i style="background:var(--dusk)"></i>Peak hour found by all-day geostationary satellites (published)</span>
+      </div>
+      <p class="strip-note" id="strip-note"></p>
+    </div>
+  </div>
+</div>
+
+<section id="counts">
+  <div class="wrap">
+    <div class="prose">
+      <h2>What the count says</h2>
+      <p id="counts-lede"></p>
+      <p>Before 2012 only MODIS existed. Its pixels are about 1 km wide, so it sees fewer fires than VIIRS (375 m). Joining the two raw records makes 2012 look like a jump in burning. AgniCal learns how MODIS observations translate into VIIRS-equivalent counts during the years both flew, and rebuilds 2003–2011 on the VIIRS scale.</p>
+    </div>
+    <div class="fig"><div id="ch-record" style="height:420px"></div></div>
+    <p class="caption" id="record-caption"></p>
+  </div>
+</section>
+
+<section id="evidence">
+  <div class="wrap">
+    <div class="prose">
+      <h2>Three signs the burning moved later</h2>
+      <p>Each of these comes straight from NASA's detections, with no model in between. The shaded band is the range seen from 2012 to 2022.</p>
+    </div>
+    <div class="grid3">
+      <div class="fig"><h3>The late satellite sees more</h3><div id="ch-aqua" style="height:240px"></div><p class="caption" id="cap-aqua"></p></div>
+      <div class="fig"><h3>More fires still burning at night</h3><div id="ch-night" style="height:240px"></div><p class="caption" id="cap-night"></p></div>
+      <div class="fig"><h3>Mornings have gone quiet</h3><div id="ch-terra" style="height:240px"></div><p class="caption" id="cap-terra"></p></div>
+    </div>
+
+    <div class="prose" style="margin-top:56px">
+      <h2>When is the peak? As far as polar orbit can see</h2>
+      <p>On a day when two satellites pass at different hours, the ratio of what they see depends on the shape of that day's burning, not on how much burned. AgniCal fits that ratio across every day of every season with all five satellites, and reports the peak hour only where satellite viewing times pin it down.</p>
+    </div>
+    <div class="fig"><div id="ch-peak" style="height:360px"></div></div>
+    <p class="caption" id="peak-caption"></p>
+  </div>
+</section>
+
+<section id="calendar">
+  <div class="wrap">
+    <div class="prose">
+      <h2>The burning calendar</h2>
+      <p>Every 8-day period of every season since 2003, on one VIIRS-equivalent scale. Pick a state or district to see when it burns and how this season compares with the five before it.</p>
+    </div>
+    <div class="controls" style="margin-top:18px">
+      <label for="area">Area</label>
+      <select id="area"></select>
+      <span class="seg" role="group" aria-label="Season">
+        <button type="button" data-season="kharif" aria-pressed="true">Paddy (Oct–Nov)</button>
+        <button type="button" data-season="rabi" aria-pressed="false">Wheat (Apr–May)</button>
+      </span>
+      <label for="cal-year">Season</label>
+      <select id="cal-year"></select>
+    </div>
+    <dl class="stats" id="stats"></dl>
+    <div id="cal-warn"></div>
+    <div class="fig"><div id="ch-cal" style="height:560px"></div></div>
+    <p class="caption">Rows are seasons, columns are 8-day periods. Rows before 2012 are rebuilt from MODIS. Values are VIIRS (Suomi NPP)-equivalent fire detections summed over the area.</p>
+  </div>
+</section>
+
+<section id="districts">
+  <div class="wrap">
+    <div class="prose">
+      <h2>District by district</h2>
+      <p>The fall in daytime counts is not even across districts, and neither is the rise in night-time fires.</p>
+    </div>
+    <div class="controls" style="margin-top:12px">
+      <span class="seg" role="group" aria-label="Map shows">
+        <button type="button" data-metric="change" aria-pressed="true">Change in paddy-season count</button>
+        <button type="button" data-metric="night" aria-pressed="false">Share of fires seen at night</button>
+      </span>
+    </div>
+    <div class="fig"><div id="ch-map"></div></div>
+    <p class="caption" id="map-caption"></p>
+  </div>
+</section>
+
+<section id="live">
+  <div class="wrap">
+    <div class="prose">
+      <h2>This season so far</h2>
+      <p id="live-lede">Suomi NPP stopped delivering data on 2 November 2026. NOAA-20 carries the same VIIRS instrument and has flown since 2018, so this chart uses NOAA-20 alone for every season, keeping the comparison like for like.</p>
+    </div>
+    <div class="fig"><div id="ch-live" style="height:380px"></div></div>
+    <p class="caption" id="live-caption"></p>
+  </div>
+</section>
+
+<section id="method">
+  <div class="wrap">
+    <div class="prose">
+      <h2>How AgniCal works</h2>
+      <ol class="method">
+        <li><b>Data.</b> Every active-fire detection from NASA FIRMS for MODIS (Terra, Aqua; 2003–2026) and VIIRS (Suomi NPP, NOAA-20, NOAA-21), cut to the official borders of Punjab and Haryana and their districts. Low-confidence and non-vegetation detections are removed.</li>
+        <li><b>One scale.</b> Detections are gridded to 0.1° cells and 8-day periods. A gradient-boosted model with a Poisson loss learns how many Suomi NPP detections a cell has, given MODIS evidence: Terra and Aqua day and night counts, fire radiative power, neighbouring cells and adjacent periods. It is trained only on 2012–2022, before Aqua's orbit drifted, and checked by leaving out one whole season at a time.</li>
+        <li><b>Time of day.</b> Each satellite pass is a snapshot at a known hour. Conditioning on each day's total removes how much burned and leaves the shape of the day's burning, estimated with a day-matched Poisson model and a day-level bootstrap.</li>
+        <li><b>Timing breaks.</b> A season is flagged when at least two of the three model-free indicators leave the 2012–2022 range by more than three robust standard deviations. In flagged seasons, counts from early-afternoon satellites are shown but not compared with earlier years.</li>
+      </ol>
+      <h3 style="margin-top:28px">Validation</h3>
+      <p class="small">Leave-one-season-out over 2012–2022, whole study area. Lower is better.</p>
+      <div id="tbl-val"></div>
+      <h3 style="margin-top:28px">What happens when MODIS drifts</h3>
+      <p class="small">Model trained on 2012–2022, then asked to predict later seasons from MODIS alone.</p>
+      <div id="tbl-drift"></div>
+      <h3 style="margin-top:28px">Limitations</h3>
+      <ul>
+        <li>Active-fire detections are snapshots, not burned area. Cloud, haze and fires that start and end between passes are missed by every polar satellite.</li>
+        <li>Polar satellites cannot measure burning after about 15:00. Where the peak lies beyond that, AgniCal reports only how late it is at least. A full correction needs all-day geostationary data (Meteosat-9 over the Indian Ocean, INSAT-3D/3DR, GEO-KOMPSAT-2A), which is the next layer to add.</li>
+        <li>Aqua's drift also changes its sun and viewing angles, which could affect what it detects. A shift in burning time is the most likely explanation because three independent indicators and two geostationary studies agree, but the Aqua ratio alone would not prove it.</li>
+        <li>District borders are from 2021, before Malerkotla and Charkhi Dadri were created; their fires are counted under the districts they were formed from.</li>
+        <li>Near-real-time 2026 files carry no fire-type field, so a few static heat sources may remain in this season's counts.</li>
+      </ul>
+      <h3 style="margin-top:28px">Sources</h3>
+      <ul class="small">
+        <li>NASA FIRMS active fire data: MODIS Collection 6.1 (MCD14ML), VIIRS 375 m (VNP14IMGML, VJ114IMGML, VJ214IMG). <a href="https://firms.modaps.eosdis.nasa.gov/download/">firms.modaps.eosdis.nasa.gov</a></li>
+        <li>Boundaries: geoBoundaries gbOpen IND. States: DataMeet / Election Commission of India (CC BY 2.5 IN). Districts: Pathways Data / lgdirectory.gov.in (ODbL 1.0). <a href="https://www.geoboundaries.org">geoboundaries.org</a></li>
+        <li id="pub-sources"></li>
+      </ul>
+      <h3 style="margin-top:28px">Use of AI</h3>
+      <p class="small">Code and text were drafted with Claude (Anthropic) and reviewed, run and checked by the author. All figures are computed from NASA data by the open-source pipeline; no AI-generated images or data are used.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>AgniCal, NASA Space Apps Challenge 2026: Harmonization of MODIS and VIIRS Hot Spots. <span id="data-end"></span></p>
+    <p>Code and data pipeline: <a id="repo-link" href="https://github.com/">GitHub repository</a>.</p>
+  </div>
+</footer>
+
+<script>
+const C = {ember:'#E8590C', emberSoft:'#FFD9C2', dusk:'#5B4B8A', sat:'#127A8A', ink:'#1B2433', muted:'#5E6B7A', rule:'#CED6DE', panel:'#FFFFFF'};
+const FONT = {family:'Bricolage Grotesque, system-ui, sans-serif', size:13, color:C.ink};
+const BASE = {font:FONT, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', margin:{l:56,r:16,t:16,b:40},
+  xaxis:{gridcolor:C.rule, zeroline:false, linecolor:C.rule}, yaxis:{gridcolor:C.rule, zeroline:false}, hoverlabel:{font:FONT}};
+const CFG = {displayModeBar:false, responsive:true};
+const fmt = n => n == null ? '–' : Math.round(n).toLocaleString('en-IN');
+const hhmm = h => { if (h == null) return '–'; h = ((h % 24) + 24) % 24; const H = Math.floor(h), M = Math.round((h - H) * 60); return String(H + (M === 60 ? 1 : 0)).padStart(2,'0') + ':' + String(M % 60).padStart(2,'0'); };
+const pct = x => (x > 0 ? '+' : '') + Math.round(x) + '%';
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const KH = 'Kharif (paddy residue, Oct-Nov)', RB = 'Rabi (wheat residue, Apr-May)';
+
+async function j(name){ const r = await fetch('data/' + name); if (!r.ok) throw new Error(name); return r.json(); }
+
+Promise.all(['summary.json','timing.json','record.json','calendar.json','districts.geojson','live.json','validation.json'].map(j))
+  .then(([S, T, R, CAL, GEO, LIVE, VAL]) => {
+    window._d = {S, T, R, CAL, GEO, LIVE, VAL};
+    const ty = Object.fromEntries(T.years.map(r => [r.year, r]));
+    initStrip(S, T, ty);
+    drawRecord(S, R, ty);
+    drawEvidence(S, T, ty);
+    drawPeak(S, T, ty);
+    initCalendar(CAL, R, ty);
+    initMap(GEO);
+    drawLive(LIVE);
+    drawTables(VAL);
+    document.getElementById('data-end').textContent = 'Data through ' + S.data_end + '.';
+    document.getElementById('pub-sources').innerHTML = 'Published peak-hour estimates used as outside checks: ' +
+      [...new Map(T.published.map(p => [p.url, p])).values()].map(p => `<a href="${p.url}">${p.label}</a>`).join('; ') + '.';
+  })
+  .catch(e => { document.getElementById('dek').textContent = 'The data files could not be loaded (' + e.message + '). Serve this folder over HTTP, for example with: python -m http.server'; });
+
+/* ---------- hero: the day strip ---------- */
+function initStrip(S, T, ty){
+  const svg = document.getElementById('strip');
+  const X0 = 6, X1 = 26.5, W = 1000, L = 40, Rm = 20, top = 30, base = 200;
+  const x = h => L + (h - X0) / (X1 - X0) * (W - L - Rm);
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (n, a, txt) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; return e; };
+  const gStatic = el('g', {}), gYear = el('g', {});
+  svg.append(gStatic, gYear);
+  // daylight and evening bands
+  gStatic.append(el('rect', {x:x(6), y:top, width:x(18) - x(6), height:base - top, fill:'#F6F8FA'}));
+  gStatic.append(el('rect', {x:x(18), y:top, width:x(X1) - x(18), height:base - top, fill:'#EEEBF6'}));
+  gStatic.append(el('text', {x:x(6) + 8, y:top + 18, fill:C.muted, 'font-size':13, 'font-family':FONT.family}, 'Daylight'));
+  gStatic.append(el('text', {x:x(18) + 8, y:top + 18, fill:C.dusk, 'font-size':13, 'font-family':FONT.family}, 'Evening and night'));
+  for (let h = 6; h <= 26; h += 2) {
+    gStatic.append(el('line', {x1:x(h), x2:x(h), y1:base, y2:base + 6, stroke:C.muted}));
+    gStatic.append(el('text', {x:x(h), y:base + 22, 'text-anchor':'middle', fill:C.muted, 'font-size':13, 'font-family':FONT.family}, hhmm(h)));
+  }
+  gStatic.append(el('line', {x1:L, x2:W - Rm, y1:base, y2:base, stroke:C.ink, 'stroke-width':1.2}));
+  gStatic.append(el('text', {x:W - Rm, y:top - 10, 'text-anchor':'end', fill:C.muted, 'font-size':12, 'font-family':FONT.family}, 'Local time, IST'));
+
+  const input = document.getElementById('year'), out = document.getElementById('year-out');
+  const note = document.getElementById('strip-note');
+  const pubFor = y => T.published.filter(p => p.year === y);
+
+  function render(y){
+    out.value = y; input.value = y;
+    while (gYear.firstChild) gYear.firstChild.remove();
+    const r = ty[y] || {};
+    document.getElementById('c-day').textContent = fmt(r.snpp_day);
+    document.getElementById('c-night').textContent = fmt(r.snpp_night);
+    // burning curve the satellites can see
+    const H = base - top - 40;
+    const lastView = r.latest_view_ist || 15;
+    if (r.peak_ist != null) {
+      const mu = r.peak_ist, sd = Math.max(r.width_h || 0.8, 0.35);
+      let d = `M ${x(X0)} ${base}`;
+      for (let h = X0; h <= X1; h += 0.05) d += ` L ${x(h)} ${base - H * Math.exp(-((h - mu) ** 2) / (2 * sd * sd))}`;
+      d += ` L ${x(X1)} ${base} Z`;
+      gYear.append(el('path', {d, fill:C.emberSoft, stroke:C.ember, 'stroke-width':2}));
+    } else if (r.peak_lo != null) {
+      // beyond view: rising flank up to the latest viewing time, then unknown
+      const mu = Math.max(r.peak_lo, lastView + 0.5), sd = 1.0;
+      let d = `M ${x(X0)} ${base}`;
+      for (let h = X0; h <= lastView; h += 0.05) d += ` L ${x(h)} ${base - H * Math.exp(-((h - mu) ** 2) / (2 * sd * sd))}`;
+      const yEnd = base - H * Math.exp(-((lastView - mu) ** 2) / (2 * sd * sd));
+      d += ` L ${x(lastView)} ${base} Z`;
+      gYear.append(el('path', {d, fill:C.emberSoft, stroke:C.ember, 'stroke-width':2}));
+      gYear.append(el('line', {x1:x(lastView), x2:x(lastView + 2.6), y1:yEnd, y2:top + 78, stroke:C.ember, 'stroke-width':2, 'stroke-dasharray':'5 5'}));
+      gYear.append(el('text', {x:x(lastView + 2.7), y:top + 83, fill:C.ember, 'font-size':14, 'font-weight':700, 'font-family':FONT.family}, `peak after ${hhmm(r.peak_lo)}: beyond the satellites' view`));
+    }
+    // satellite viewing times
+    const sats = [['Terra', r.terra_time_ist], ['Suomi NPP', r.snpp_time_ist], ['Aqua', r.aqua_time_ist]].filter(s => s[1] != null)
+      .sort((a, b) => a[1] - b[1]);
+    sats.forEach(([name, t], i) => {
+      const lx = x(t);
+      gYear.append(el('line', {x1:lx, x2:lx, y1:top + 26, y2:base, stroke:C.sat, 'stroke-width':2}));
+      const dy = name === 'Aqua' ? 0 : (name === 'Suomi NPP' ? 16 : 0);
+      const anchor = name === 'Terra' ? 'end' : (name === 'Aqua' ? 'start' : 'middle');
+      gYear.append(el('text', {x:lx + (anchor === 'end' ? -6 : anchor === 'start' ? 6 : 0), y:base + 40 + dy, 'text-anchor':anchor,
+        fill:C.sat, 'font-size':13, 'font-weight':700, 'font-family':FONT.family}, `${name} ${hhmm(t)}`));
+    });
+    gYear.append(el('line', {x1:x(25.5), x2:x(25.5), y1:top + 26, y2:base, stroke:C.sat, 'stroke-width':2, 'stroke-dasharray':'3 4'}));
+    gYear.append(el('text', {x:x(25.5) - 6, y:base + 40, 'text-anchor':'end', fill:C.sat, 'font-size':13, 'font-weight':700, 'font-family':FONT.family}, 'Night pass ~01:30'));
+    // published geostationary peaks
+    pubFor(y).forEach(p => {
+      if (p.peak_ist != null) {
+        const px = x(p.peak_ist);
+        gYear.append(el('path', {d:`M ${px} ${top + 30} l 8 10 l -8 10 l -8 -10 z`, fill:C.dusk}));
+        gYear.append(el('text', {x:px + 12, y:top + 45, fill:C.dusk, 'font-size':13, 'font-weight':700, 'font-family':FONT.family}, `peak seen by geostationary satellites: ${hhmm(p.peak_ist)}`));
+      } else if (p.peak_lo != null) {
+        gYear.append(el('rect', {x:x(p.peak_lo), y:top + 32, width:x(p.peak_hi) - x(p.peak_lo), height:8, rx:4, fill:C.dusk}));
+        gYear.append(el('text', {x:x(p.peak_hi) + 8, y:top + 41, fill:C.dusk, 'font-size':13, 'font-weight':700, 'font-family':FONT.family}, `most fires, geostationary: ${hhmm(p.peak_lo)}–${hhmm(p.peak_hi)}`));
+      }
+    });
+    // plain-language note
+    const ref = S.day_snpp_ref_mean_2017_21, nref = S.night_snpp_ref_mean_2017_21;
+    let msg;
+    if (r.timing_break) {
+      const dd = (r.snpp_day / ref - 1) * 100, nn = (r.snpp_night / nref - 1) * 100;
+      const word = v => v < 0 ? `fell ${Math.abs(Math.round(v))}%` : `rose ${Math.round(v)}%`;
+      msg = `${y}: timing break. Against the 2017–21 average, daytime fires counted ${word(dd)} while night-pass fires ${word(nn)}. Aqua, now looking at ${hhmm(r.aqua_time_ist)}, sees ${(r.aqua_over_snpp_x_baseline).toFixed(1)}× as many fires per Suomi NPP fire as it used to.`;
+    } else if (y <= 2022) {
+      msg = `${y}: the satellites look while the fires burn. Peak visible burning around ${hhmm(r.peak_ist)}, right where Suomi NPP and Aqua pass.`;
+    } else {
+      msg = `${y}.`;
+    }
+    note.textContent = msg;
+  }
+  let timer = null;
+  const stop = () => { if (timer) { clearInterval(timer); timer = null; } };
+  input.addEventListener('input', () => { stop(); render(+input.value); });
+  render(2012);
+  if (!reduce) {
+    let y = 2012;
+    timer = setInterval(() => { y += 1; render(y); if (y >= 2025) stop(); }, 650);
+  } else render(2025);
+}
+
+/* ---------- the record ---------- */
+function drawRecord(S, R, ty){
+  const rows = R['Punjab + Haryana'][KH].filter(r => S.data_end >= `${r.year}-12-15`);
+  const yrs = rows.map(r => r.year);
+  const rec = rows.filter(r => r.source === 'reconstructed');
+  const obs = rows.filter(r => r.source === 'observed' && !r.timing_break);
+  const brk = rows.filter(r => r.source === 'observed' && r.timing_break);
+  const traces = [
+    {type:'bar', x:rec.map(r => r.year), y:rec.map(r => r.harmonized), name:'Rebuilt from MODIS', marker:{color:'#F7B58C'},
+     error_y:{type:'data', symmetric:false, array:rec.map(r => r.hi - r.harmonized), arrayminus:rec.map(r => r.harmonized - r.lo), color:C.muted, thickness:1.2},
+     hovertemplate:'%{x}: %{y:,.0f} (rebuilt)<extra></extra>'},
+    {type:'bar', x:obs.map(r => r.year), y:obs.map(r => r.harmonized), name:'Counted by Suomi NPP', marker:{color:C.ember},
+     hovertemplate:'%{x}: %{y:,.0f}<extra></extra>'},
+    {type:'bar', x:brk.map(r => r.year), y:brk.map(r => r.harmonized), name:'Counted, but timing break', marker:{color:'#fff', line:{color:C.dusk, width:2}, pattern:{shape:'/', fgcolor:C.dusk, size:7}},
+     hovertemplate:'%{x}: %{y:,.0f} counted; not comparable with earlier seasons<extra></extra>'},
+    {type:'scatter', mode:'lines+markers', x:yrs, y:rows.map(r => r.stitched), name:'Raw MODIS, then raw VIIRS, joined', line:{color:C.muted, dash:'dot', width:2}, marker:{size:5},
+     hovertemplate:'%{x}: %{y:,.0f} raw<extra></extra>'},
+  ];
+  Plotly.newPlot('ch-record', traces, {...BASE, barmode:'overlay', legend:{orientation:'h', y:1.12, x:0},
+    yaxis:{...BASE.yaxis, title:{text:'Paddy-season fire detections (VIIRS scale)'}}, xaxis:{...BASE.xaxis, dtick:2}}, CFG);
+  const k = S.snpp_kharif, py = S.snpp_peak_year;
+  document.getElementById('counts-lede').textContent =
+    `Suomi NPP counted ${fmt(k[py])} paddy-season fires in Punjab and Haryana in ${py}, and ${fmt(k[2025])} in 2025: a ${Math.abs(S.snpp_drop_peak_to_2025_pct)}% fall. Read at face value, paddy burning has almost stopped. But the count only shows what a satellite sees at about 13:30.`;
+  document.getElementById('record-caption').textContent =
+    `Error bars on rebuilt seasons are the 10th–90th percentile of the model's errors when a whole season was left out. Hatched seasons (${S.timing_break_years.join(', ')}) are counted correctly, but burning had moved outside the satellites' viewing hours, so they are not comparable with the seasons before.`;
+}
+
+/* ---------- three indicators ---------- */
+function drawEvidence(S, T, ty){
+  const yrs = T.years.filter(r => r.year >= 2012 && r.year <= 2025);
+  const band = (vals) => { const b = vals.filter((v, i) => yrs[i].year <= 2022 && v != null); return [Math.min(...b), Math.max(...b)]; };
+  const mini = (id, key, color, yTitle, tick) => {
+    const v = yrs.map(r => r[key]);
+    const [lo, hi] = band(v);
+    Plotly.newPlot(id, [{type:'scatter', mode:'lines+markers', x:yrs.map(r => r.year), y:v, line:{color, width:2.5}, marker:{size:6, color:yrs.map(r => r.timing_break ? C.dusk : color)},
+      hovertemplate:'%{x}: %{y:' + tick + '}<extra></extra>'}],
+      {...BASE, margin:{l:48, r:8, t:6, b:30}, showlegend:false,
+       shapes:[{type:'rect', xref:'paper', x0:0, x1:1, y0:lo, y1:hi, fillcolor:'rgba(94,107,122,0.12)', line:{width:0}}],
+       yaxis:{...BASE.yaxis, tickformat:tick, title:{text:yTitle, font:{size:12}}}, xaxis:{...BASE.xaxis, dtick:3}}, CFG);
+  };
+  mini('ch-aqua', 'aqua_over_snpp', C.sat, 'Aqua fires per Suomi NPP fire', '.2f');
+  mini('ch-night', 'night_share', C.dusk, 'Share seen on night pass', '.1%');
+  mini('ch-terra', 'terra_over_aqua', C.ember, 'Morning (Terra) per afternoon (Aqua)', '.2f');
+  const r22 = ty[2022], r24 = ty[2024], r25 = ty[2025];
+  document.getElementById('cap-aqua').textContent = `Aqua's orbit drifted from ${hhmm(r22.aqua_time_ist)} (2022) to ${hhmm(r25.aqua_time_ist)} (2025). Looking later, it now sees ${r25.aqua_over_snpp_x_baseline.toFixed(1)}× as many fires per Suomi NPP fire as in 2012–22.`;
+  document.getElementById('cap-night').textContent = `Fires still burning at the ~01:30 pass were ${(100 * r22.night_share).toFixed(1)}% of Suomi NPP's count in 2022 and ${(100 * r25.night_share).toFixed(1)}% in 2025; in raw numbers, ${fmt(r22.snpp_night)} then ${fmt(r25.snpp_night)}, while daytime counts collapsed.`;
+  document.getElementById('cap-terra').textContent = `Terra passes in the late morning. Its count per Aqua fire fell to ${r25.terra_over_aqua.toFixed(3)} in 2025, ${Math.round(1 / r25.terra_over_aqua_x_baseline)}× below the 2012–22 level: almost nothing burns before noon now.`;
+}
+
+/* ---------- peak hour ---------- */
+function drawPeak(S, T, ty){
+  const ok = T.years.filter(r => r.peak_ist != null && r.year >= 2012);
+  const beyond = T.years.filter(r => r.peak_ist == null && r.beyond_view && r.year >= 2012 && r.peak_lo != null);
+  const traces = [
+    {type:'scatter', mode:'markers', x:ok.map(r => r.year), y:ok.map(r => r.peak_ist), name:'Peak of visible burning (AgniCal)',
+     marker:{color:C.ember, size:9}, error_y:{type:'data', symmetric:false, array:ok.map(r => r.peak_hi - r.peak_ist), arrayminus:ok.map(r => r.peak_ist - r.peak_lo), color:C.ember, thickness:1.5},
+     hovertemplate:'%{x}: %{customdata}<extra></extra>', customdata:ok.map(r => `${hhmm(r.peak_ist)} (90% interval ${hhmm(r.peak_lo)}–${hhmm(r.peak_hi)})`)},
+    {type:'scatter', mode:'markers+text', x:beyond.map(r => r.year), y:beyond.map(r => r.peak_lo), name:'Beyond satellite view: at least this late',
+     marker:{symbol:'triangle-up', size:14, color:C.ember}, text:beyond.map(r => 'after ' + hhmm(r.peak_lo)), textposition:'top center',
+     textfont:{color:C.ember, size:12}, hovertemplate:'%{x}: peak after %{text}<extra></extra>'},
+    {type:'scatter', mode:'markers', x:T.published.filter(p => p.peak_ist).map(p => p.year), y:T.published.filter(p => p.peak_ist).map(p => p.peak_ist),
+     name:'Geostationary studies (published)', marker:{symbol:'diamond', size:12, color:C.dusk}, hovertemplate:'%{x}: %{y:.2f} h<extra>published</extra>'},
+    ...T.published.filter(p => p.peak_lo).map(p => ({type:'scatter', mode:'lines', x:[p.year, p.year], y:[p.peak_lo, p.peak_hi], line:{color:C.dusk, width:6}, showlegend:false,
+      hovertemplate:`${p.year}: ${hhmm(p.peak_lo)}–${hhmm(p.peak_hi)}<extra>published</extra>`})),
+    {type:'scatter', mode:'lines', x:[2011.5, 2025.5], y:[13.6, 13.6], line:{color:C.sat, dash:'dot', width:1.5}, name:'Suomi NPP passes (~13:35)', hoverinfo:'skip'},
+  ];
+  Plotly.newPlot('ch-peak', traces, {...BASE, legend:{orientation:'h', y:1.15, x:0},
+    yaxis:{...BASE.yaxis, title:{text:'Hour of day (IST)'}, range:[12.5, 18.6], tickvals:[13,14,15,16,17,18], ticktext:['13:00','14:00','15:00','16:00','17:00','18:00']},
+    xaxis:{...BASE.xaxis, dtick:1, range:[2011.5, 2025.5]}}, CFG);
+  const b = T.baseline_peak_ist;
+  document.getElementById('peak-caption').textContent = `From 2012 to 2022 the peak sat at ${hhmm(b)} on average, inside the satellites' viewing hours and in line with the ~13:30 that geostationary data showed for 2020. It moved to ${hhmm(ty[2024].peak_ist)} in 2024 and beyond the satellites' view in 2025. Geostationary studies, which watch all day, put recent peaks at 16:00–18:00: the satellites now see only the start of each day's burning.`;
+}
+
+/* ---------- calendar tool ---------- */
+function initCalendar(CAL, R, ty){
+  const areaSel = document.getElementById('area'), yearSel = document.getElementById('cal-year');
+  const names = Object.keys(CAL.areas);
+  const groups = {'Region':['Punjab + Haryana'], 'States':['Punjab', 'Haryana'], 'Districts':names.filter(n => !['Punjab + Haryana','Punjab','Haryana'].includes(n)).sort()};
+  for (const [g, list] of Object.entries(groups)) {
+    const og = document.createElement('optgroup'); og.label = g;
+    list.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; og.append(o); });
+    areaSel.append(og);
+  }
+  let season = 'kharif';
+  const seasonPeriods = s => s === 'kharif' ? [...Array(46).keys()].filter(p => p * 8 + 1 >= 258 && p * 8 + 1 <= 349) : [...Array(46).keys()].filter(p => p * 8 + 1 >= 91 && p * 8 + 1 <= 151);
+  const years = CAL.areas['Punjab + Haryana'].years;
+  years.slice().reverse().forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; yearSel.append(o); });
+  const yDefault = years.includes(2025) ? 2025 : years[years.length - 1];
+  yearSel.value = yDefault;
+
+  function stats(a, y){
+    const A = CAL.areas[a], sp = seasonPeriods(season);
+    const row = yy => { const i = A.years.indexOf(yy); return i < 0 ? null : sp.map(p => A.z[i][p]); };
+    const v = row(y); if (!v) return null;
+    const tot = v.reduce((s, x) => s + x, 0);
+    if (tot <= 0) return {tot:0};
+    let cum = 0, start = null, end = null, pk = 0;
+    v.forEach((x, i) => { if (x > v[pk]) pk = i; cum += x; if (start == null && cum >= .1 * tot) start = i; if (end == null && cum >= .9 * tot) end = i; });
+    const prev = [1,2,3,4,5].map(k => row(y - k)).filter(Boolean).map(r => r.reduce((s, x) => s + x, 0));
+    const prevMean = prev.length ? prev.reduce((s, x) => s + x, 0) / prev.length : null;
+    return {tot, peak:CAL.period_labels[sp[pk]], start:CAL.period_labels[sp[start]], end:CAL.period_labels[sp[end]], prevMean, nPrev:prev.length};
+  }
+  function draw(){
+    const a = areaSel.value, y = +yearSel.value, A = CAL.areas[a];
+    const z = A.z.map(r => r.map(v => Math.log10(1 + v)));
+    const maxz = Math.max(1, ...z.flat());
+    Plotly.react('ch-cal', [{type:'heatmap', z, x:CAL.period_labels, y:A.years.map(String), customdata:A.z,
+      colorscale:[[0,'#FFFFFF'],[0.1,'#FFF0E3'],[0.4,'#F7A56E'],[0.7,'#E8590C'],[1,'#7A2306']], zmin:0, zmax:maxz,
+      hovertemplate:'%{y}, from %{x}: %{customdata:,} detections<extra></extra>',
+      colorbar:{title:{text:'Detections', side:'right'}, tickvals:[0,1,2,3,4], ticktext:['0','10','100','1k','10k'], thickness:12}}],
+      {...BASE, margin:{l:48, r:10, t:10, b:46}, yaxis:{autorange:'reversed', dtick:1, gridcolor:'rgba(0,0,0,0)'}, xaxis:{nticks:12, gridcolor:'rgba(0,0,0,0)'},
+       shapes:[{type:'line', xref:'paper', x0:0, x1:1, y0:'2011', y1:'2011', yshift:0, line:{color:C.ink, width:1, dash:'dot'}},
+               {type:'rect', xref:'paper', x0:0, x1:1, y0:String(y), y1:String(y), line:{color:C.ink, width:2}, fillcolor:'rgba(0,0,0,0)'}]}, CFG);
+    const s = stats(a, y);
+    const el = document.getElementById('stats');
+    const brk = season === 'kharif' && ty[y] && ty[y].timing_break;
+    if (!s || !s.tot) { el.innerHTML = '<div><dt>This season</dt><dd>No fires detected</dd></div>'; document.getElementById('cal-warn').innerHTML = ''; return; }
+    const chg = s.prevMean ? (s.tot / s.prevMean - 1) * 100 : null;
+    el.innerHTML = `
+      <div><dt>Peak week</dt><dd>${s.peak}</dd></div>
+      <div><dt>Main burning window</dt><dd>${s.start} to ${s.end}<small>middle 80% of the season's fires</small></dd></div>
+      <div><dt>Fires counted</dt><dd>${fmt(s.tot)}<small>VIIRS-equivalent detections</small></dd></div>
+      <div><dt>Against the ${s.nPrev} seasons before</dt><dd>${chg == null ? '–' : pct(chg)}<small>${brk ? 'not comparable: timing break' : 'change in fires counted'}</small></dd></div>`;
+    document.getElementById('cal-warn').innerHTML = brk ? `<p class="warn">In ${y}, burning had moved later than the satellites look, so this season's count measures how many fires were burning at about 13:30, not how much was burned. Compare its timing, not its total.</p>` : '';
+  }
+  areaSel.addEventListener('change', draw); yearSel.addEventListener('change', draw);
+  document.querySelectorAll('[data-season]').forEach(b => b.addEventListener('click', () => {
+    season = b.dataset.season;
+    document.querySelectorAll('[data-season]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    draw();
+  }));
+  draw();
+}
+
+/* ---------- district map (plain SVG, no map tiles or downloads) ---------- */
+function initMap(GEO){
+  let metric = 'change';
+  const feats = GEO.features;
+  const lastKey = Object.keys(feats[0].properties).find(k => /^kharif_20\d\d$/.test(k));
+  const lastYear = lastKey ? lastKey.slice(-4) : '';
+  const host = document.getElementById('ch-map');
+  host.style.height = 'auto';
+  host.innerHTML = '<svg id="map-svg" viewBox="0 0 800 640" role="img" aria-label="Map of the districts of Punjab and Haryana"></svg><div id="map-legend" style="margin-top:8px"></div><p id="map-info" class="small" aria-live="polite" style="min-height:2.6em;margin:8px 0 0"></p>';
+  const svg = document.getElementById('map-svg');
+  const NS = 'http://www.w3.org/2000/svg';
+  // bounds and projection (equirectangular, scaled by cos of mean latitude)
+  let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+  const rings = f => (f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates);
+  feats.forEach(f => rings(f).forEach(poly => poly.forEach(ring => ring.forEach(([lo, la]) => {
+    minX = Math.min(minX, lo); maxX = Math.max(maxX, lo); minY = Math.min(minY, la); maxY = Math.max(maxY, la); }))));
+  const k = Math.cos((minY + maxY) / 2 * Math.PI / 180);
+  const W = 800, H = 640, pad = 16;
+  const sc = Math.min((W - 2 * pad) / ((maxX - minX) * k), (H - 2 * pad) / (maxY - minY));
+  const ox = (W - (maxX - minX) * k * sc) / 2, oy = (H - (maxY - minY) * sc) / 2;
+  const P = ([lo, la]) => [ox + (lo - minX) * k * sc, oy + (maxY - la) * sc];
+  const pathOf = f => rings(f).map(poly => poly.map(ring => 'M' + ring.map(c => P(c).map(v => v.toFixed(1)).join(',')).join('L') + 'Z').join('')).join('');
+  const paths = feats.map(f => { const e = document.createElementNS(NS, 'path'); e.setAttribute('d', pathOf(f)); e.setAttribute('stroke', '#ffffff'); e.setAttribute('stroke-width', '1');
+    e.setAttribute('tabindex', '0'); svg.append(e); return e; });
+  const lerp = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const rgb = c => `rgb(${c.join(',')})`;
+  const MIN_REF = 200;   // below this many fires a season, a percentage change means little
+  const colChange = (v, ref) => { if (v == null || !(ref >= MIN_REF)) return '#E3E7EB'; const t = Math.max(-1, Math.min(1, v / 100));
+    return t < 0 ? rgb(lerp(hex('#F4F1F8'), hex('#5B4B8A'), -t)) : rgb(lerp(hex('#F4F1F8'), hex('#E8590C'), t)); };
+  const colNight = (v, max) => v == null ? '#E3E7EB' : rgb(lerp(hex('#F4F1F8'), hex('#3D2F6B'), Math.min(1, v / max)));
+  const info = document.getElementById('map-info');
+  function describe(p){
+    return metric === 'change'
+      ? `${p.district} (${p.state}): ${fmt(p.ref_mean_2017_21)} detections a season in 2017–21, ${fmt(p[lastKey])} in ${lastYear}` +
+        (p.ref_mean_2017_21 >= MIN_REF ? ` (${pct(p.change_pct)}).` : '; too few fires for a percentage change to mean much.')
+      : `${p.district} (${p.state}): ${p.night_share_recent == null ? '–' : (100 * p.night_share_recent).toFixed(1) + '%'} of fires seen on the night pass in 2024–26, against ${p.night_share_2017_21 == null ? '–' : (100 * p.night_share_2017_21).toFixed(1) + '%'} in 2017–21.`;
+  }
+  function draw(){
+    const nightMax = Math.max(0.02, ...feats.map(f => f.properties.night_share_recent || 0));
+    feats.forEach((f, i) => {
+      const p = f.properties;
+      paths[i].setAttribute('fill', metric === 'change' ? colChange(p.change_pct, p.ref_mean_2017_21) : colNight(p.night_share_recent, nightMax));
+      paths[i].innerHTML = ''; const t = document.createElementNS(NS, 'title'); t.textContent = describe(p); paths[i].append(t);
+      paths[i].onmouseenter = paths[i].onfocus = () => { info.textContent = describe(p); paths[i].setAttribute('stroke', C.ink); paths[i].setAttribute('stroke-width', '2'); };
+      paths[i].onmouseleave = paths[i].onblur = () => { paths[i].setAttribute('stroke', '#ffffff'); paths[i].setAttribute('stroke-width', '1'); };
+    });
+    const lg = document.getElementById('map-legend');
+    lg.innerHTML = metric === 'change'
+      ? `<div style="display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:.85rem;color:var(--muted)"><span>−100% or less</span><span style="flex:0 0 220px;height:10px;border-radius:5px;background:linear-gradient(90deg,#5B4B8A,#F4F1F8,#E8590C)"></span><span>+100% or more</span><span style="margin-left:14px;display:inline-flex;align-items:center;gap:6px"><span style="width:14px;height:10px;border-radius:3px;background:#E3E7EB;display:inline-block"></span>fewer than 200 fires a season</span></div>`
+      : `<div style="display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:.85rem;color:var(--muted)"><span>0%</span><span style="flex:0 0 220px;height:10px;border-radius:5px;background:linear-gradient(90deg,#F4F1F8,#3D2F6B)"></span><span>${(100 * nightMax).toFixed(0)}% of fires seen at night</span></div>`;
+    info.textContent = 'Point at or tab to a district for its numbers.';
+    document.getElementById('map-caption').textContent = metric === 'change'
+      ? `Paddy-season detections (VIIRS-equivalent) in ${lastYear} against each district's 2017–21 average. ${lastYear} has a timing break, so a fall here marks where burning left the satellites' viewing hours as well as where it may truly have dropped.`
+      : 'Share of each district\'s VIIRS paddy-season detections made on the ~01:30 night pass, 2024–26 average. Darker districts are where burning has shifted most into the evening.';
+  }
+  document.querySelectorAll('[data-metric]').forEach(b => b.addEventListener('click', () => {
+    metric = b.dataset.metric;
+    document.querySelectorAll('[data-metric]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    draw();
+  }));
+  draw();
+}
+
+/* ---------- 2026 season ---------- */
+function drawLive(L){
+  const ser = L.series['Punjab + Haryana'] || {};
+  const yrs = Object.keys(ser).map(Number).sort();
+  if (!yrs.length || !ser[2026]) { document.getElementById('live').hidden = true; return; }
+  const idx = d => L.days.indexOf(d);
+  const traces = yrs.map(y => {
+    const s = ser[y], is26 = y === 2026, end = is26 && s.last ? idx(s.last) + 1 : L.days.length;
+    return {type:'scatter', mode:'lines', x:L.days.slice(0, end).map(d => '2021-' + d), y:s.day.slice(0, end), name:String(y),
+      line:{color:is26 ? C.ember : (y >= 2023 ? '#B9B1D6' : '#C9D1D9'), width:is26 ? 3.5 : 1.6}, hovertemplate:`${y}, %{x|%d %b}: %{y:,} fires so far<extra></extra>`};
+  });
+  Plotly.newPlot('ch-live', traces, {...BASE, legend:{orientation:'v', x:1.01, y:1}, yaxis:{...BASE.yaxis, title:{text:'Daytime fires so far (NOAA-20)'}},
+    xaxis:{...BASE.xaxis, tickformat:'%d %b', range:['2021-09-15', '2021-12-15']}}, CFG);
+  const s26 = ser[2026];
+  if (s26 && s26.last) {
+    const i = idx(s26.last);
+    const prev = yrs.filter(y => y < 2026).map(y => [y, ser[y].day[i]]);
+    const n26 = s26.day[i], night26 = s26.night[i];
+    const p25 = ser[2025] ? ser[2025].day[i] : null;
+    document.getElementById('live-caption').textContent = `By ${s26.last.replace('-', '/')} 2026 NOAA-20 had counted ${fmt(n26)} daytime and ${fmt(night26)} night-pass fires${p25 != null ? `, against ${fmt(p25)} daytime by the same date in 2025` : ''}. Grey lines are 2018–2022; violet lines are seasons with a timing break.`;
+  }
+}
+
+/* ---------- tables ---------- */
+function drawTables(V){
+  const lab = {global_ratio:'One regional ratio (baseline)', cell_ratio:'Per-cell ratio (baseline)', gbm_poisson:'AgniCal model'};
+  const m = V.metrics.models;
+  let h = '<table><thead><tr><th>Method</th><th class="num">Cell deviance</th><th class="num">Regional correlation</th><th class="num">Paddy total error</th><th class="num">Wheat total error</th><th class="num">Paddy peak exact</th></tr></thead><tbody>';
+  for (const [k, v] of Object.entries(m)) {
+    h += `<tr><td>${lab[k] || k}</td><td class="num">${v.cell_poisson_deviance.toFixed(3)}</td><td class="num">${v.regional_corr.toFixed(3)}</td><td class="num">${v.seasons[KH].total_mape_pct.toFixed(1)}%</td><td class="num">${v.seasons[RB].total_mape_pct.toFixed(1)}%</td><td class="num">${v.seasons[KH].peak_exact_pct.toFixed(0)}% of seasons</td></tr>`;
+  }
+  document.getElementById('tbl-val').innerHTML = h + '</tbody></table>';
+  const d = V.drift_test.filter(r => r.season === KH);
+  if (d.length) {
+    let t = '<table><thead><tr><th>Season</th><th class="num">Counted by Suomi NPP</th><th class="num">Predicted from MODIS</th><th class="num">Error</th></tr></thead><tbody>';
+    d.forEach(r => { t += `<tr><td>${r.year}</td><td class="num">${fmt(r.observed)}</td><td class="num">${fmt(r.predicted)}</td><td class="num">${pct(r.error_pct)}</td></tr>`; });
+    document.getElementById('tbl-drift').innerHTML = t + '</tbody></table><p class="small">As Aqua drifts later it sees more of the late burning, so MODIS alone now overstates what Suomi NPP counts. The one-scale model is therefore applied only to seasons before 2012, when Aqua still passed at its original hour.</p>';
+  }
+}
+</script>
+</body>
+</html>

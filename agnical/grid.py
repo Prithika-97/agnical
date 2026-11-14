@@ -29,7 +29,8 @@ def _grid_index(bbox, res):
 
 def build_panel(det: pd.DataFrame, bbox=config.BBOX, res=config.GRID_RES,
                 modis_first_year=config.MODIS_FIRST_YEAR,
-                viirs_start=config.VIIRS_START, end_date=None) -> pd.DataFrame:
+                viirs_start=config.VIIRS_START, end_date=None,
+                viirs_end=config.VIIRS_END) -> pd.DataFrame:
     """Return one row per active cell x year x period with MODIS features and VIIRS target.
 
     Cells with no detection by either sensor in the whole record are left out; every
@@ -58,7 +59,10 @@ def build_panel(det: pd.DataFrame, bbox=config.BBOX, res=config.GRID_RES,
     sat = det["satellite"].to_numpy()
     dn = det["daynight"].to_numpy()
     frp = det["frp"].fillna(0).to_numpy()
-    is_m, is_v = sensor == "MODIS", sensor == "VIIRS"
+    is_m = sensor == "MODIS"
+    is_v = (sensor == "VIIRS") & (sat == config.TARGET_SAT)
+    is_j1 = (sensor == "VIIRS") & (sat == "NOAA20")
+    is_j2 = (sensor == "VIIRS") & (sat == "NOAA21")
 
     f = {
         "m_terra_day": dense(is_m & (sat == "Terra") & (dn == "D")),
@@ -69,6 +73,8 @@ def build_panel(det: pd.DataFrame, bbox=config.BBOX, res=config.GRID_RES,
         "m_frp_max": dense(is_m, frp, how="max"),
         "v_count": dense(is_v),
         "v_frp_sum": dense(is_v, frp),
+        "j1_count": dense(is_j1),
+        "j2_count": dense(is_j2),
     }
     m = f["m_terra_day"] + f["m_terra_night"] + f["m_aqua_day"] + f["m_aqua_night"]
     f["m_count"] = m
@@ -81,7 +87,8 @@ def build_panel(det: pd.DataFrame, bbox=config.BBOX, res=config.GRID_RES,
     f["m_prev"] = np.concatenate([np.zeros_like(m[:, :1]), m[:, :-1]], axis=1)
     f["m_next"] = np.concatenate([m[:, 1:], np.zeros_like(m[:, :1])], axis=1)
 
-    active = (m.sum(axis=(0, 1)) + f["v_count"].sum(axis=(0, 1))) > 0
+    active = (m.sum(axis=(0, 1)) + f["v_count"].sum(axis=(0, 1)) + f["j1_count"].sum(axis=(0, 1))
+              + f["j2_count"].sum(axis=(0, 1))) > 0
     ax, ay = np.nonzero(active)
     n_act = len(ax)
     Y, P, C = np.meshgrid(np.arange(nyr), np.arange(npd), np.arange(n_act), indexing="ij")
@@ -110,7 +117,8 @@ def build_panel(det: pd.DataFrame, bbox=config.BBOX, res=config.GRID_RES,
     pe = np.minimum(ps + np.timedelta64(PERIOD_DAYS - 1, "D"), year_end)
     keys = keys.assign(
         m_valid=bool(is_m.any()) & (pe <= end_date),
-        v_valid=bool(is_v.any()) & (ps >= np.datetime64(pd.Timestamp(viirs_start))) & (pe <= end_date))
+        v_valid=bool(is_v.any()) & (ps >= np.datetime64(pd.Timestamp(viirs_start)))
+        & (pe <= min(end_date, pd.Timestamp(viirs_end))))
     return panel.merge(keys, on=["year", "period"], how="left")
 
 

@@ -1,71 +1,73 @@
-# AgniCal: a consistent 20+ year burning calendar from MODIS and VIIRS
+# AgniCal
 
-NASA Space Apps Challenge 2026, challenge **Harmonization of MODIS and VIIRS Hot Spots**.
+**Punjab and Haryana's farm fires moved later in the day. The satellites that count them didn't.**
 
-Satellites have tracked active fires for over 20 years, but the record is split between
-MODIS (Terra/Aqua, ~1 km pixels, since 2000) and VIIRS (Suomi NPP, 375 m pixels, since 2012).
-VIIRS sees many more, smaller fires, so joining the two raw records creates a false jump in 2012.
-AgniCal learns how MODIS detections map to VIIRS-equivalent detections during the overlap years,
-validates that mapping one held-out year at a time, and rebuilds one consistent record.
-The showcase region is Punjab and Haryana, India, where crop-residue burning drives severe
-seasonal air pollution.
+NASA Space Apps Challenge 2026 · Challenge: *Harmonization of MODIS and VIIRS Hot Spots*
 
-## What the app shows
+Crop-residue fires in Punjab and Haryana feed north India's winter smog, and official
+claims of progress rest on one number: how many fires NASA's satellites count. Those
+satellites (MODIS on Terra and Aqua, VIIRS on Suomi NPP, NOAA-20 and NOAA-21) pass over at
+fixed hours. AgniCal does two things:
 
-- **Burning calendar:** every 8-day period of every year on one scale.
-- **Peak week, burning window and an "unusual season" flag** for any area and season.
-- **Long-term trend** with the naive stitched record for comparison, and uncertainty bands
-  for reconstructed (pre-VIIRS) years.
-- **Method and validation:** model vs baselines, held-out years, ratio stability, feature importance.
+1. **One scale for 2003-2026.** It harmonizes MODIS into VIIRS-equivalent counts, so the
+   2012 switch from MODIS to VIIRS no longer looks like a jump in burning, and turns the
+   record into a burning calendar for every state and district.
+2. **A timing break nobody had flagged in the record.** Using only NASA's own polar-orbiter
+   data, it shows that burning moved later than the satellites look after 2022, so a fall in
+   counts can no longer be read as a fall in burning.
 
-## Quick start
+## What the data show (computed by `pipeline.py`, see `reports/RESULTS.md`)
+
+- Suomi NPP counted about 95% fewer paddy-season fires in 2025 than in its 2016 peak.
+- In the same seasons, three model-free indicators all left their 2012-2022 range:
+  - **Aqua**, whose orbit drifted from ~13:50 to ~15:15 IST, now sees several times as many
+    fires per Suomi NPP fire as it did when both passed at the same hour.
+  - The **share of fires seen on the ~01:30 night pass** rose many-fold, and night-pass
+    counts rose in absolute terms while daytime counts collapsed.
+  - **Terra** (late morning) now sees almost nothing.
+- A day-matched model of all five satellites puts the peak of visible burning at about
+  13:40 in 2012-2022, in line with the ~13:30 that geostationary data showed for 2020; it
+  moves later after 2022 and leaves the satellites' view in 2025. Independent geostationary
+  studies (ISRO SAC with Meteosat; NASA with GEO-KOMPSAT-2A) report peaks of 16:00-18:00.
+- Trained on 2012-2022, MODIS alone overstates what Suomi NPP counts by a growing margin in
+  2023-2025, another sign that the satellites now sample a different part of the day.
+
+## Run it
 
 ```bash
 pip install -r requirements.txt
-# 1. Put FIRMS archive CSVs (MODIS C6.1 and VIIRS S-NPP 375 m) in data/raw/
-# 2. Build everything (about 5-10 minutes; add --fast for a quick first look)
-python pipeline.py --end 2025-12-31
-# 3. Open the app
-streamlit run app.py
+# put NASA FIRMS archive CSVs in data/raw/ (MODIS C6.1 and VIIRS S-NPP, NOAA-20, NOAA-21)
+python pipeline.py            # about 5 minutes; writes data/processed, reports/ and docs/data
+python -m http.server -d docs # then open http://localhost:8000
+pytest -q
 ```
 
-No data yet? `python scripts/make_synthetic.py --out data/synthetic` writes clearly labelled
-synthetic files; run `python pipeline.py --raw data/synthetic --fast` to test the pipeline.
-Everything built from them is flagged as SYNTHETIC in the results file and the app.
-
-Run the tests with `pytest -q`.
+The website in `docs/` is static (HTML, JSON, Plotly.js) and is served as-is by GitHub Pages.
 
 ## Method
 
-1. **Ingest** (`agnical/ingest.py`): read FIRMS archive and near-real-time CSVs, keep vegetation
-   fires (type 0), drop low-confidence detections, keep VIIRS Suomi NPP only, prefer standard over
-   NRT data where both exist, remove duplicates.
-2. **Grid** (`agnical/grid.py`): 0.1° cells x 8-day periods. MODIS features per cell-period:
-   Terra/Aqua day/night counts, fire radiative power (sum, max), detections in the 8 neighbouring
-   cells, and in the previous and next period.
-3. **Harmonize** (`agnical/harmonize.py`): LightGBM with a Poisson objective predicts VIIRS
-   detections from MODIS features. Compared against two baselines: one regional ratio, and a
-   per-cell ratio shrunk toward the regional ratio.
-4. **Validate:** leave-one-year-out over the overlap years. Metrics at cell level (RMSE, MAE,
-   Poisson deviance), regional level (correlation, RMSE), season totals (MAPE, bias) and peak
-   timing (days). `reports/RESULTS.md` is written automatically from these numbers.
-5. **Calendar** (`agnical/burncal.py`): season totals, peak week, 10-90% burning window, and a
-   z-score against all other years.
-
-## Data
-
-- NASA FIRMS active fire archive: MODIS Collection 6.1 (MCD14ML) and VIIRS S-NPP 375 m
-  (VNP14IMGML). https://firms.modaps.eosdis.nasa.gov/download/
+| Step | Module | What it does |
+|---|---|---|
+| Ingest | `agnical/ingest.py` | Reads FIRMS archive and near-real-time files for all five satellites, keeps vegetation fires, drops low confidence, prefers standard over NRT data per satellite and day. |
+| Borders | `agnical/regions.py` | Keeps detections inside the real borders of Punjab and Haryana (geoBoundaries) and tags each with its district. |
+| Time of day | `agnical/diurnal.py` | Builds one row per satellite pass; fits n ~ Poisson(exp(α_day + β_sensor − (t − μ_year)² / 2σ_year²)), removing α_day exactly by conditioning on each day's total; day-level bootstrap. Reports a peak only where viewing times bracket it. Flags timing breaks from three model-free indicators (robust z > 3 on at least two). |
+| One scale | `agnical/grid.py`, `agnical/harmonize.py` | 0.1° cells × 8-day periods; LightGBM (Poisson) predicts Suomi NPP counts from MODIS features; trained on 2012-2022 only; leave-one-season-out validation against two ratio baselines; drift test on 2023 onward. |
+| Outputs | `agnical/export.py` | Writes the JSON the website reads. No number on the site is typed by hand. |
 
 ## Limitations
 
-- Active-fire detections are not burned area. Clouds, haze and fires between overpasses are missed.
-- MODIS orbits drifted late in the mission; the ratio-stability check is reported for this reason.
-- Reconstructed years assume the relationship learned from 2012 onward held before 2012.
-- App areas are bounding boxes, not administrative boundaries.
+- Active-fire detections are snapshots, not burned area; cloud, haze and short fires between passes are missed.
+- Polar satellites cannot see burning after about 15:00. Where the peak is later, AgniCal reports only a lower bound. A full correction needs geostationary data (Meteosat-9 IODC, INSAT-3D/3DR, GEO-KOMPSAT-2A).
+- District borders are from 2021 (before Malerkotla and Charkhi Dadri).
+- 2026 near-real-time files have no fire-type field, so a few static heat sources may remain.
+
+## Data and credits
+
+- NASA FIRMS active fire data (MODIS C6.1; VIIRS 375 m from Suomi NPP, NOAA-20, NOAA-21): https://firms.modaps.eosdis.nasa.gov
+- geoBoundaries gbOpen IND: states (DataMeet / Election Commission of India, CC BY 2.5 IN), districts (Pathways Data / lgdirectory.gov.in, ODbL 1.0)
+- Published peak-hour estimates used only as outside checks: ISRO SAC study reported in The Tribune (Dec 2025); NASA / H. Jethva reported by IANS (Dec 2025).
 
 ## Use of AI
 
-Code was written with help from Claude (Anthropic), an AI assistant, and reviewed, run and tested
-by the author. No AI-generated images or data are used; the synthetic test generator is labelled
-and its outputs are never presented as results.
+Code and text were drafted with Claude (Anthropic) and reviewed, run and checked by the author.
+All figures are computed from NASA data by this pipeline. No AI-generated images or data are used.

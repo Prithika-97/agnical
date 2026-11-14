@@ -1,8 +1,8 @@
 @echo off
-rem Start the AgniCal app. Double-click this file after setup.
+rem Open the AgniCal website locally. Double-click this file after setup.
 cd /d "%~dp0"
-echo Starting AgniCal... your browser will open at http://localhost:8501
-echo Keep this window open while you use the app. Close it to stop the app.
-start "" http://localhost:8501
-".venv\Scripts\python.exe" -m streamlit run app.py --server.headless true --browser.gatherUsageStats false
+echo Opening AgniCal at http://localhost:8000
+echo Keep this window open while you use the site. Close it to stop.
+start "" http://localhost:8000
+".venv\Scripts\python.exe" -m http.server 8000 -d docs
 pause

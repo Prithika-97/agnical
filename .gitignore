@@ -6,3 +6,4 @@ data/raw/
 data/synthetic/
 .pytest_cache/
 .DS_Store
+data/processed/*.parquet

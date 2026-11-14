@@ -13,8 +13,11 @@ FEATURES = ["m_count", "m_terra_day", "m_terra_night", "m_aqua_day", "m_aqua_nig
 TARGET = "v_count"
 
 
-def overlap(panel: pd.DataFrame) -> pd.DataFrame:
-    return panel[panel["m_valid"] & panel["v_valid"]]
+def overlap(panel: pd.DataFrame, years=config.TRAIN_YEARS) -> pd.DataFrame:
+    """Rows where both MODIS and Suomi NPP observed. By default only the years before Aqua's
+    orbit drift (2012-2022), when MODIS sampled the same hour of the day it always had."""
+    ov = panel[panel["m_valid"] & panel["v_valid"]]
+    return ov if years is None else ov[ov["year"].isin(list(years))]
 
 
 class GlobalRatio:
@@ -137,10 +140,31 @@ def evaluate(cv: pd.DataFrame) -> dict:
 
 def ratio_stability(panel: pd.DataFrame) -> pd.DataFrame:
     """Observed VIIRS/MODIS ratio per overlap year: is the relationship stable over time?"""
-    ov = overlap(panel)
+    ov = overlap(panel, years=None)
     g = ov.groupby("year")[[TARGET, "m_count"]].sum()
     g["ratio"] = g[TARGET] / g["m_count"].replace(0, np.nan)
     return g.reset_index()
+
+
+def drift_test(panel: pd.DataFrame, fast=False) -> pd.DataFrame:
+    """Train on 2012-2022, predict 2023 onward: how badly does the MODIS->VIIRS mapping break
+    once Aqua's overpass drifts later? Returns per-year season totals, observed vs predicted."""
+    ov_all = overlap(panel, years=None)
+    train = overlap(panel)
+    test = ov_all[~ov_all["year"].isin(list(config.TRAIN_YEARS))].copy()
+    if test.empty:
+        return pd.DataFrame()
+    test["pred"] = GBMHarmonizer(fast=fast).fit(train).predict(test)
+    rows = []
+    for s in config.SEASONS:
+        sp = season_periods(s)
+        g = test[test["period"].isin(sp)].groupby("year")[[TARGET, "pred"]].sum()
+        for y, r in g.iterrows():
+            if r[TARGET] < 100:   # season not (yet) covered by Suomi NPP
+                continue
+            rows.append({"year": int(y), "season": s, "observed": float(r[TARGET]), "predicted": float(r["pred"]),
+                         "error_pct": float((r["pred"] - r[TARGET]) / max(r[TARGET], 1) * 100)})
+    return pd.DataFrame(rows)
 
 
 def build_harmonized(panel: pd.DataFrame, fast=False):

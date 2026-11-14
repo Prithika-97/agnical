@@ -6,7 +6,8 @@ RAW_DIR = ROOT / "data" / "raw"
 OUT_DIR = ROOT / "data" / "processed"
 REPORT_DIR = ROOT / "reports"
 
-# Region of interest: Punjab + Haryana, India (west, south, east, north), degrees.
+# Download box around Punjab + Haryana (west, south, east, north). Detections are then cut to
+# the real state borders (agnical/regions.py), so the box only needs to contain both states.
 BBOX = (73.8, 27.6, 77.6, 32.6)
 
 # Approximate sub-areas offered in the app. These are bounding boxes, not
@@ -22,7 +23,11 @@ N_PERIODS = 46          # 8-day periods per year, same convention as MODIS compo
 
 MODIS_FIRST_YEAR = 2003            # first full year with both Terra and Aqua
 VIIRS_START = "2012-01-20"         # Suomi NPP 375 m record starts
-VIIRS_SATELLITES = ("SNPP",)       # one satellite keeps the target record consistent
+VIIRS_END = "2026-11-02"           # Suomi NPP data delivery ended (FIRMS notice)
+VIIRS_SATELLITES = ("SNPP", "NOAA20", "NOAA21")
+TARGET_SAT = "SNPP"                # the record is expressed in Suomi NPP-equivalent detections
+TRAIN_YEARS = range(2012, 2023)    # Aqua orbit drift changes MODIS sampling from 2023 on
+DATA_END = "2026-11-13"
 MODIS_CONF_MIN = 30                # drop low-confidence MODIS detections
 VIIRS_DROP_LOW = True              # drop VIIRS 'low' confidence detections
 KEEP_TYPES = (0,)                  # 0 = presumed vegetation fire (archive files only)
