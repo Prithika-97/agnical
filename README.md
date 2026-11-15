@@ -34,8 +34,10 @@ MODIS-VIIRS record that everyone uses, and answers with NASA's polar data alone:
 - Relative to the comparison region, the Aqua ratio on the Indian side is **3.7x** in 2025
   (95% interval 2.5-5.4) and 2.0x in 2024 (1.4-2.9). The night share is 23x (15-38) and
   10.5x (7.4-15).
-- **2023 is unsettled**: Aqua's ratio rose as much across the border (0.92, 0.68-1.20). Only
-  the night share separates the two sides that year. 2024 and 2025 are confirmed.
+- **2023 is the weakest year**: against the narrow Pakistan strip, Aqua's ratio rose as much on
+  both sides (0.92, 0.68-1.20), so only the night share separates them; 2024 and 2025 are
+  confirmed. Against the larger all-India control (below) 2023 is distinguishable on both, so
+  we read it as the first, smaller step of the shift.
 - **A signal we threw out**: the morning (Terra) to afternoon (Aqua) ratio collapsed on both
   sides of the border, so it reflects orbit drift, not burning.
 - **A test that found nothing**: within VIIRS's own window (two looks ~100 min apart on some
@@ -63,6 +65,17 @@ the states that show no flag, which are seen by the same drifting satellites.
   its 2012-2022 level in the 2025 post-monsoon season (1.06x pre-monsoon, 1.01x winter).
 - Watch list (one indicator only): Uttar Pradesh post-monsoon in all three years; Gujarat
   pre-monsoon 2025 (Aqua ratio 2.1x unflagged states, 1.5-2.8); Haryana winter night share.
+
+### New in this project
+
+- **This season, in every state** (1 Oct - 2 Nov 2026, near-real-time data, judged against the
+  same weeks of 2012-2022): the break is still there. Punjab's Aqua ratio is 3.4x its old
+  level and 4.0x that of unflagged states (95% interval 2.1-5.9); its night share is 64x.
+- **District blind-spot index**: Aqua's later count in Suomi NPP units divided by the count,
+  2024-25. It is 4.8x in Mansa (count -92% against 2017-21, floor no more than -63%), 3.4x in
+  Sangrur, and 1.1x in Jalandhar. No intervals at this level; read the pattern.
+- **Check your own region**: the website runs the same test in the browser on FIRMS archive
+  CSVs for any area on Earth, or on any Indian state and any months.
 
 ### Harmonization, validated honestly (leave one season out, 2012-2022)
 

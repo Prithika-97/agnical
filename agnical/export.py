@@ -148,6 +148,29 @@ def write_site_data(out: Path, det, harmonized, timing, indicators, districts, m
         lambda d: _r(ns.loc[d, [y for y in (2024, 2025, 2026) if y in ns.columns]].mean(), 3) if d in ns.index else None)
     gdf["night_share_2017_21"] = gdf["district"].map(
         lambda d: _r(ns.loc[d, [y for y in ref_years if y in ns.columns]].mean(), 3) if d in ns.index else None)
+    # Blind-spot index per district: Aqua's later count in Suomi NPP units, divided by what Suomi NPP
+    # counted, for 2024-25 pooled. 1 = the count misses nothing that Aqua's later look can show.
+    dd = det[det["date"].dt.dayofyear.between(274, 334) & (det["daynight"] == "D")]
+    dd = dd.assign(year=dd["date"].dt.year)
+    aq = dd[(dd["sensor"] == "MODIS") & (dd["satellite"] == "Aqua")].groupby(["district", "year"]).size().unstack(fill_value=0)
+    sn = dd[(dd["sensor"] == "VIIRS") & (dd["satellite"] == "SNPP")].groupby(["district", "year"]).size().unstack(fill_value=0)
+    base, recent, refy = list(range(2012, 2023)), [2024, 2025], list(range(2017, 2022))
+
+    def blind(d):
+        if d not in aq.index or d not in sn.index:
+            return (None, None, None)
+        a_b, s_b = aq.loc[d].reindex(base, fill_value=0).sum(), sn.loc[d].reindex(base, fill_value=0).sum()
+        a_r, s_r = aq.loc[d].reindex(recent, fill_value=0).sum(), sn.loc[d].reindex(recent, fill_value=0).sum()
+        ref = sn.loc[d].reindex(refy, fill_value=0).mean()
+        if a_b < 100 or a_r < 15 or s_r < 30 or ref < 200:
+            return (None, None, None)
+        f = max(1.0, a_r * (s_b / a_b) / s_r)
+        cnt = (s_r / len(recent)) / ref - 1
+        return (_r(f, 2), _r(cnt * 100, 0), _r(((s_r / len(recent)) * f / ref - 1) * 100, 0))
+    bl = {d: blind(d) for d in gdf["district"]}
+    gdf["floor_factor"] = gdf["district"].map(lambda d: bl[d][0])
+    gdf["count_change_pct"] = gdf["district"].map(lambda d: bl[d][1])
+    gdf["floor_change_pct"] = gdf["district"].map(lambda d: bl[d][2])
     gdf["kharif_by_year"] = gdf["kharif_by_year"].map(json.dumps)
     gdf.to_file(out / "districts.geojson", driver="GeoJSON")
 

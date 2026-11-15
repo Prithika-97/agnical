@@ -90,13 +90,14 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   <header class="site">
     <span>AgniCal</span>
     <nav aria-label="Sections">
-      <a href="#counts">The record</a><a href="#evidence">The test</a><a href="#india">All of India</a><a href="#floor">The floor</a><a href="#calendar">Calendar</a><a href="#users">Who it is for</a><a href="#method">Method</a>
+      <a href="#counts">The record</a><a href="#evidence">The test</a><a href="#india">All of India</a><a href="#floor">The floor</a><a href="#calendar">Calendar</a><a href="#check">Check your region</a><a href="#users">Who it is for</a><a href="#method">Method</a>
     </nav>
   </header>
 
   <div class="hero">
     <h1>Punjab and Haryana's farm fires moved later in the day. The satellites that count them didn't.</h1>
-    <p class="dek" id="dek">NASA's fire satellites pass over Punjab and Haryana at fixed hours. AgniCal joins their 23-year record into one scale, tests the shift against the same satellites' view across the border, and puts a floor under what the count now misses.</p>
+    <p class="dek" id="dek">NASA's fire satellites pass over Punjab and Haryana at fixed hours. AgniCal joins their 23-year record into one scale, tests the shift against the same satellites' view across the border and in every state of India, and puts a floor under what the count now misses.</p>
+    <p class="dek" style="font-size:1rem;margin-top:10px"><b style="font-family:var(--display)">What is new here.</b> Others showed with all-day geostationary satellites that burning now peaks in the late afternoon. AgniCal confirms it from NASA's polar data alone, separates it from the drift of the satellites' own orbits, and builds it into the 2003–2025 record. It adds three things of its own: the result for the season now under way, in every Indian state; a blind-spot index for every district; and a checker that runs the same test on FIRMS files for any region on Earth.</p>
 
     <div class="strip-wrap" role="group" aria-labelledby="strip-title">
       <div class="strip-top">
@@ -222,12 +223,13 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   <div class="wrap">
     <div class="prose">
       <h2>District by district</h2>
-      <p>The fall in daytime counts is not even across districts, and neither is the rise in night-time fires.</p>
+      <p>The fall in daytime counts is not even across districts, and neither is the blind spot. The third view shows where a district's falling count says least about its burning, which matters because districts are judged on these counts.</p>
     </div>
     <div class="controls" style="margin-top:12px">
       <span class="seg" role="group" aria-label="Map shows">
         <button type="button" data-metric="change" aria-pressed="true">Change in paddy-season count</button>
         <button type="button" data-metric="night" aria-pressed="false">Share of fires seen at night</button>
+        <button type="button" data-metric="blind" aria-pressed="false">Blind-spot index</button>
       </span>
     </div>
     <div class="fig"><div id="ch-map"></div></div>
@@ -246,6 +248,25 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   </div>
 </section>
 
+<section id="check">
+  <div class="wrap">
+    <div class="prose">
+      <h2>Check your own region</h2>
+      <p>Aqua's drift affects every MODIS fire record on Earth. This tool runs the timing test on any place: pick an Indian state, or drop in NASA FIRMS archive files (CSV) for MODIS and VIIRS Suomi NPP for your own area. Files are read in your browser and are not sent anywhere.</p>
+    </div>
+    <div class="controls" style="margin-top:12px">
+      <label>Indian state <select id="ck-state"></select></label>
+      <label>or your FIRMS files <input type="file" id="ck-files" accept=".csv,text/csv" multiple></label>
+      <label>Season from <select id="ck-from"></select></label>
+      <label>to <select id="ck-to"></select></label>
+    </div>
+    <p class="small" id="ck-status" aria-live="polite" style="margin:10px 0 0"></p>
+    <div class="fig" style="margin-top:14px"><h3 id="ck-verdict" style="font-size:1.25rem;line-height:1.3"></h3><div id="ck-chart" style="height:300px;margin-top:8px"></div></div>
+    <div id="ck-table"></div>
+    <p class="small">How to get files: at firms.modaps.eosdis.nasa.gov/download, request "MODIS C6.1" and "SUOMI VIIRS C2" as CSV for your area, 2012 onward, and unzip them. The test needs at least eight seasons between 2012 and 2022 with 300 or more Suomi NPP daytime fires each. The same two indicators and thresholds are used as everywhere on this page.</p>
+  </div>
+</section>
+
 <section id="users">
   <div class="wrap">
     <div class="prose">
@@ -256,6 +277,7 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
       <div><h3>CREAMS laboratory, IARI</h3><p>Publishes the daily paddy-residue burning bulletin from these satellites. The timing-break flag and the late-view floor can be printed beside each season's count, using data the laboratory already holds.</p></div>
       <div><h3>Commission for Air Quality Management, state pollution boards</h3><p>Use year-on-year counts to judge districts. In flagged seasons a district's count is not comparable with its count before 2023; the calendar tool marks these seasons for every district.</p></div>
       <div><h3>Air-quality forecasters for Delhi</h3><p>Emission inputs built from early-afternoon fire counts understate smoke in flagged seasons. The floor gives a minimum scaling, season by season.</p></div>
+      <div><h3>Anyone who uses a MODIS fire record, anywhere</h3><p>Aqua's drift is global. The checker on this page tells you, from your own FIRMS files, whether your region's count is still comparable with earlier years.</p></div>
       <div><h3>Researchers and journalists</h3><p>The harmonized 2003–2025 record, with uncertainty and flags, is one file: <a href="data/agnical_record.csv">agnical_record.csv</a>. The method is not tied to one region: the same timing test ran unchanged on every state of India.</p></div>
     </div>
   </div>
@@ -269,7 +291,7 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
         <li><b>Data.</b> Every active-fire detection from NASA FIRMS for MODIS (Terra, Aqua; 2003–2026) and VIIRS (Suomi NPP, NOAA-20, NOAA-21), cut to the borders of Punjab and Haryana and their districts. Detections in the rest of the download box are kept as comparison regions. Low-confidence and non-vegetation detections are removed.</li>
         <li><b>One scale.</b> Detections are gridded to 0.1° cells and 8-day periods. A gradient-boosted model with a Poisson loss learns how many Suomi NPP detections a cell has, given MODIS evidence: Terra and Aqua day and night counts, fire radiative power, neighbouring cells and adjacent periods. It is trained only on 2012–2022, before Aqua's orbit drifted, and checked by leaving out one whole season at a time.</li>
         <li><b>Time of day.</b> Each satellite pass is a snapshot at a known hour. Conditioning on each day's total removes how much burned and leaves the shape of the day's burning, estimated with a day-matched Poisson model and a day-level bootstrap.</li>
-        <li><b>Timing breaks.</b> Two indicators need no model: Aqua fires per Suomi NPP fire, and the share of Suomi NPP fires seen on its night pass. A season is flagged when both leave the 2012–2022 range by more than three robust standard deviations, and confirmed when the study area also moved further than the comparison region on both (95% interval above 1). In flagged seasons, counts are shown but not compared with earlier years.</li>
+        <li><b>Timing breaks.</b> Two indicators need no model: Aqua fires per Suomi NPP fire, and the share of Suomi NPP fires seen on its night pass. A season is flagged when both leave the 2012–2022 range by more than three robust standard deviations, and confirmed when the area also moved further than a comparison region on both (95% interval above 1). There are two comparisons: the strip of Pakistani Punjab, and all Indian states with no flag. In flagged seasons, counts are shown but not compared with earlier years.</li>
         <li><b>Floor.</b> Aqua's daytime count times the 2012–2022 Suomi NPP-to-Aqua ratio. The range uses the lowest and highest yearly ratio of those eleven seasons.</li>
       </ol>
       <h3 style="margin-top:28px">Validation</h3>
@@ -286,6 +308,9 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
         <li>The comparison region is a narrow strip of Pakistani Punjab inside the download box, with about a tenth of the study area's fires. It controls for the satellites, not for weather or crop calendar differences across the border.</li>
         <li>The two indicators are not fully independent: both rest on Suomi NPP's daytime count. The night share uses Suomi NPP alone, so it is unaffected by Aqua's or Terra's drift.</li>
         <li>The floor assumes the 2012–2022 Aqua-to-Suomi NPP ratio would still hold if both looked at the same hour. Across the border, where burning did not shift, the ratio stayed at its old level through Aqua's drift, which supports this.</li>
+        <li>The 2026 season is judged on 1 October to 2 November only, from near-real-time data, which NASA later replaces with a standard product. In the checker, an incomplete season is shown but compared with full seasons, so read it with care.</li>
+        <li>The district blind-spot index rests on small counts and has no interval.</li>
+        <li>The all-India run uses MODIS and Suomi NPP only, with Suomi NPP fires counted per 0.1° cell and assigned to the state of the cell centre, so a small share near state borders falls to the neighbour.</li>
         <li>We could not obtain geostationary fire data during the hackathon, so the peak hours of 16:00–18:00 are quoted from published studies, not computed here.</li>
         <li>District borders are from 2021, before Malerkotla and Charkhi Dadri were created; their fires are counted under the districts they were formed from.</li>
         <li>Near-real-time 2026 files carry no fire-type field, so a few static heat sources may remain in this season's counts.</li>
@@ -332,6 +357,7 @@ Promise.all(['summary.json','timing.json','record.json','calendar.json','distric
     drawEvidence(S, T, ty, CT);
     drawFloor(S, CT);
     Promise.all([j('india.json'), j('india_states.json')]).then(([IN, IG]) => initIndia(IN, IG)).catch(() => {});
+    j('checker_states.json').then(initChecker).catch(() => initChecker(null));
     drawPeak(S, T, ty);
     initCalendar(CAL, R, ty);
     initMap(GEO);
@@ -466,7 +492,7 @@ function drawRecord(S, R, ty){
   document.getElementById('counts-lede').textContent =
     `Suomi NPP counted ${fmt(k[py])} paddy-season fires in Punjab and Haryana in ${py}, and ${fmt(k[2025])} in 2025: a ${Math.abs(S.snpp_drop_peak_to_2025_pct)}% fall. Read at face value, paddy burning has almost stopped. But the count only shows what a satellite sees at about 13:30.`;
   document.getElementById('record-caption').textContent =
-    `Error bars on rebuilt seasons are the 10th–90th percentile of the model's errors when a whole season was left out. Hatched seasons (${S.timing_break_years.join(', ')}) are counted correctly but flagged as timing breaks: the count is not comparable with the seasons before. ${S.timing_confirmed_years.join(' and ')} are also confirmed against the comparison region across the border.`;
+    `Error bars on rebuilt seasons are the 10th–90th percentile of the model's errors when a whole season was left out. Hatched seasons (${S.timing_break_years.join(', ')}) are counted correctly but flagged as timing breaks: the count is not comparable with the seasons before. ${S.timing_confirmed_years.join(' and ')} are also confirmed against the comparison region across the border; 2023 is confirmed only against the larger all-India comparison below.`;
 }
 
 /* ---------- evidence with comparison region ---------- */
@@ -500,7 +526,7 @@ function drawEvidence(S, T, ty, CT){
   const aq23 = CT.did.find(r => r.indicator === 'aqua_over_snpp' && r.year === 2023);
   document.getElementById('checks-text').innerHTML = `<b>Three more checks.</b> Viewing angle: using only detections made close to straight down, the Aqua ratio in 2025 is ${n25.near_nadir_x_baseline.toFixed(1)}× its old level, against ${n25.all_x_baseline.toFixed(1)}× with all detections, so angle does not explain it. ` +
     `A test that found nothing: on days when VIIRS itself passes both before and after 13:30, the rise between the two looks was ${v25.log_rise_per_h.toFixed(2)} per hour (log scale) in 2025, inside its 2012–2022 range of ${Math.min(...vb).toFixed(2)} to ${Math.max(...vb).toFixed(2)}. What still burns at midday keeps its old shape; the change lies after the satellites' window, which fits a new late-afternoon burst more than a gradual slide. ` +
-    `And 2023 is unsettled: Aqua's ratio rose as much across the border (Indian ÷ Pakistan ${aq23.ratio.toFixed(2)}, interval ${aq23.ratio_lo.toFixed(2)}–${aq23.ratio_hi.toFixed(2)}), so only the night share separates the two sides that year.`;
+    `And 2023 is the weakest year: against the narrow Pakistan strip, Aqua's ratio rose as much on both sides (Indian ÷ Pakistan ${aq23.ratio.toFixed(2)}, interval ${aq23.ratio_lo.toFixed(2)}–${aq23.ratio_hi.toFixed(2)}), so only the night share separates them. <span id="note-2023"></span>`;
 
   const names = [...new Set(CT.regions.map(r => r.region))].sort((x, y) => (y === CT.study) - (x === CT.study) || (y === CT.control) - (x === CT.control));
   let t = '<table><thead><tr><th>Region</th><th class="num">Suomi NPP day fires, 2025</th><th class="num">Change from its 2012–22 average</th><th>2023</th><th>2024</th><th>2025</th></tr></thead><tbody>';
@@ -511,11 +537,104 @@ function drawEvidence(S, T, ty, CT){
   document.getElementById('tbl-regions').innerHTML = t + '</tbody></table><p class="small">Regions with under about 1,000 fires a season have only a handful of night detections, so a single flag there can be chance. Rajasthan\'s districts in the box border Punjab and Haryana.</p>';
 }
 
+/* ---------- check your own region ---------- */
+// months: {"YYYY-MM": [aquaDay, snppDay, snppNight, snppAll, aquaLocalHour]}. Same test as agnical/national.py.
+function assessRegion(months, m0, m1, end){
+  const inWin = m => m0 <= m1 ? (m >= m0 && m <= m1) : (m >= m0 || m <= m1);
+  const Y = {};
+  Object.entries(months).forEach(([ym, v]) => { const y = +ym.slice(0, 4), m = +ym.slice(5, 7); if (!inWin(m)) return;
+    const sy = (m0 > m1 && m <= m1) ? y - 1 : y, o = Y[sy] || (Y[sy] = {year:sy, aq:0, sd:0, sn:0, sa:0, tw:0, tn:0});
+    o.aq += v[0]; o.sd += v[1]; o.sn += v[2]; o.sa += v[3]; if (v[4] != null && v[0]) { o.tw += v[4] * v[0]; o.tn += v[0]; } });
+  const rows = Object.values(Y).filter(r => r.sd > 0).sort((a, b) => a.year - b.year);
+  rows.forEach(r => { r.aqr = r.aq / r.sd; r.ns = r.sn / r.sa; r.t = r.tn ? r.tw / r.tn : null; });
+  const B = rows.filter(r => r.year >= 2012 && r.year <= 2022), sum = (a, k) => a.reduce((s, r) => s + r[k], 0);
+  const meanFires = B.length ? sum(B, 'sd') / B.length : 0;
+  if (B.length < 8 || meanFires < 300 || sum(B, 'aq') === 0) return {ok:false, rows, n:B.length, meanFires};
+  const med = a => { const s = [...a].sort((x, y) => x - y), n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; };
+  const sd = a => { const m = a.reduce((s, v) => s + v, 0) / a.length; return Math.sqrt(a.reduce((s, v) => s + (v - m) ** 2, 0) / (a.length - 1)); };
+  const z = k => { const v = B.map(r => r[k]), m = med(v), mad = 1.4826 * med(v.map(x => Math.abs(x - m))), sc = mad > 0 ? mad : (sd(v) || 1e-9); return x => (x - m) / sc; };
+  const nightOK = sum(B, 'sn') / B.length >= 5, za = z('aqr'), zn = z('ns');
+  const pa = sum(B, 'aq') / sum(B, 'sd'), pn = sum(B, 'sn') / sum(B, 'sa'), r0 = sum(B, 'sd') / sum(B, 'aq');
+  const ry = B.filter(r => r.aq > 0).map(r => r.sd / r.aq);
+  const endY = end ? +end.slice(0, 4) : null, endM = end ? +end.slice(5, 7) : null;
+  rows.forEach(r => { r.ax = r.aqr / pa; r.nx = nightOK && pn > 0 ? r.ns / pn : null;
+    r.flags = (za(r.aqr) > 3 ? 1 : 0) + (nightOK && zn(r.ns) > 3 ? 1 : 0); r.tests = 1 + (nightOK ? 1 : 0);
+    r.status = r.tests === 2 && r.flags === 2 ? 'timing_break' : r.flags >= 1 ? 'one_indicator' : 'no_break';
+    r.floor = r.aq * r0 / r.sd; r.floorLo = r.aq * Math.min(...ry) / r.sd; r.floorHi = r.aq * Math.max(...ry) / r.sd;
+    const lastY = m0 <= m1 ? r.year : r.year + 1;
+    r.partial = end ? (lastY > endY || (lastY === endY && m1 >= endM)) : false; });
+  return {ok:true, rows, meanFires, nightOK};
+}
+function initChecker(DATA){
+  const MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const $ = id => document.getElementById(id), selS = $('ck-state'), selA = $('ck-from'), selB = $('ck-to');
+  [selA, selB].forEach(el => el.innerHTML = MON.map((m, i) => `<option value="${i + 1}">${m}</option>`).join(''));
+  let months = null, end = null, label = '';
+  const peakPair = mo => { const tot = Array(13).fill(0); Object.entries(mo).forEach(([ym, v]) => { const y = +ym.slice(0, 4); if (y >= 2012 && y <= 2022) tot[+ym.slice(5, 7)] += v[1]; });
+    let best = 1, bv = -1; for (let m = 1; m <= 12; m++) { const v = tot[m] + tot[m % 12 + 1]; if (v > bv) { bv = v; best = m; } } return [best, best % 12 + 1]; };
+  const xf = v => v == null ? '–' : v.toFixed(1) + '×';
+  function run(){
+    if (!months) return;
+    const A = assessRegion(months, +selA.value, +selB.value, end), win = `${MON[selA.value - 1]}–${MON[selB.value - 1]}`;
+    if (!A.ok) { $('ck-verdict').textContent = `${label}, ${win}: not enough fires to test.`; $('ck-table').innerHTML = ''; Plotly.purge('ck-chart');
+      $('ck-status').textContent = `Found ${A.n} seasons in 2012–2022 with about ${fmt(A.meanFires)} Suomi NPP daytime fires each; the test needs 8 seasons of 300 or more. Try other months or a larger area.`; return; }
+    const R = A.rows.filter(r => r.year >= 2012), full = R.filter(r => !r.partial), last = full[full.length - 1], cur = R[R.length - 1];
+    const word = {timing_break:'a timing break. The count is no longer comparable with earlier years', one_indicator:'one indicator outside its range. Watch this region', no_break:'no timing break. The count is still comparable with earlier years'};
+    $('ck-verdict').textContent = `${label}, ${win} ${last.year}: ${word[last.status]}.` + (last.status !== 'no_break' && last.floor > 1.2 ? ` At Aqua's later hour there were at least ${last.floor.toFixed(1)}× as many fires as Suomi NPP counted.` : '');
+    $('ck-status').textContent = `Baseline 2012–2022: about ${fmt(A.meanFires)} Suomi NPP daytime fires a season.` + (A.nightOK ? '' : ' Too few night fires to use the night-share indicator, so only one test applies.') + (cur.partial ? ` ${cur.year} is incomplete (data to ${end}) and is shown but not judged in the headline.` : '');
+    const tr = (k, name, color) => ({type:'scatter', mode:'lines+markers', x:R.map(r => r.year), y:R.map(r => r[k]), name, line:{color, width:2.5}, marker:{size:5}, hovertemplate:name + ', %{x}: %{y:.2f}× its 2012–22 level<extra></extra>'});
+    Plotly.newPlot('ck-chart', [tr('ax', 'Aqua fires per Suomi NPP fire', C.ember)].concat(A.nightOK ? [tr('nx', 'Share seen on the night pass', C.dusk)] : []),
+      {...BASE, legend:{orientation:'h', y:1.14, x:0}, shapes:[{type:'line', xref:'paper', x0:0, x1:1, y0:1, y1:1, line:{color:C.muted, width:1, dash:'dot'}}],
+       yaxis:{...BASE.yaxis, type:'log', tickvals:[0.1,0.3,1,3,10,30,100], ticktext:['0.1','0.3','1','3','10','30','100'], title:{text:'× 2012–22 level (log scale)'}}, xaxis:{...BASE.xaxis, dtick:1}}, CFG);
+    let h = '<table><thead><tr><th>Season</th><th class="num">Suomi NPP day fires</th><th class="num">Aqua looks at (local time)</th><th class="num">Aqua ratio, × old level</th><th class="num">Night share, × old level</th><th class="num">Floor</th><th>Reading</th></tr></thead><tbody>';
+    R.filter(r => r.year >= 2019).forEach(r => { h += `<tr><td>${r.year}${r.partial ? ' (incomplete)' : ''}</td><td class="num">${fmt(r.sd)}</td><td class="num">${r.t == null ? '–' : hhmm(r.t)}</td><td class="num">${xf(r.ax)}</td><td class="num">${xf(r.nx)}</td><td class="num">${r.floor > 1.2 ? r.floor.toFixed(1) + '× (' + r.floorLo.toFixed(1) + '–' + r.floorHi.toFixed(1) + ')' : '–'}</td><td>${{timing_break:'Timing break', one_indicator:'One indicator out', no_break:'No break'}[r.status]}</td></tr>`; });
+    $('ck-table').innerHTML = h + '</tbody></table>';
+  }
+  function load(mo, e, name){ months = mo; end = e; label = name; const [a, b] = peakPair(mo); selA.value = a; selB.value = b; run(); }
+  [selA, selB].forEach(el => el.addEventListener('change', run));
+  if (DATA) { const names = Object.keys(DATA.states).sort();
+    selS.innerHTML = names.map(n => `<option>${n}</option>`).join(''); selS.value = names.includes('Punjab') ? 'Punjab' : names[0];
+    selS.addEventListener('change', () => load(DATA.states[selS.value], DATA.end, selS.value));
+    load(DATA.states[selS.value], DATA.end, selS.value);
+  } else selS.closest('label').hidden = true;
+  // user files: FIRMS archive / NRT CSVs, any region
+  $('ck-files').addEventListener('change', async ev => {
+    const files = [...ev.target.files]; if (!files.length) return;
+    const day = {}, maxD = {aq:'', sn:''}; let n = 0, kept = 0;
+    try {
+      for (const f of files) {
+        let head = null, ix = {}, buf = '';
+        const reader = f.stream().pipeThrough(new TextDecoderStream()).getReader();
+        const line = ln => { if (!ln) return; const c = ln.split(',');
+          if (!head) { head = c.map(x => x.trim().toLowerCase()); head.forEach((h, i) => ix[h] = i); if (ix.acq_date == null || ix.daynight == null) throw new Error(f.name + ' is not a FIRMS fire CSV'); return; }
+          n++; const inst = (c[ix.instrument] || '').toUpperCase(), sat = (c[ix.satellite] || '').toUpperCase(), conf = (c[ix.confidence] || '').toLowerCase();
+          if (ix.type != null && c[ix.type] !== '' && c[ix.type] !== '0') return;
+          let k = null;
+          if (inst === 'MODIS') { if (!(sat === 'AQUA' || sat === 'A')) return; if (+conf < 30) return; k = 'aq'; }
+          else { if (!(sat === 'N' || sat === 'SNPP' || sat.includes('SUOMI') || inst === 'SNPP')) return; if (conf.startsWith('l')) return; k = 'sn'; }
+          const d = c[ix.acq_date], dn = c[ix.daynight] === 'D', o = day[d] || (day[d] = [0, 0, 0, 0, 0]);
+          if (d > maxD[k]) maxD[k] = d; kept++;
+          if (k === 'aq') { if (dn) { o[0]++; const t = c[ix.acq_time].padStart(4, '0'); o[4] += ((+t.slice(0, 2) + +t.slice(2) / 60 + (+c[ix.longitude]) / 15) % 24 + 24) % 24; } }
+          else { o[3]++; if (dn) o[1]++; else o[2]++; } };
+        for (;;) { const {value, done} = await reader.read(); if (done) break; buf += value; const parts = buf.split(/\r?\n/); buf = parts.pop(); parts.forEach(line);
+          $('ck-status').textContent = `Reading ${f.name}: ${fmt(n)} rows …`; }
+        line(buf);
+      }
+      if (!maxD.aq || !maxD.sn) throw new Error('Need both a MODIS file (with Aqua) and a VIIRS Suomi NPP file. Found ' + (maxD.aq ? 'only MODIS.' : maxD.sn ? 'only VIIRS.' : 'neither.'));
+      const e = maxD.aq < maxD.sn ? maxD.aq : maxD.sn, mo = {};
+      Object.entries(day).forEach(([d, v]) => { if (d > e || d < '2012-01-20') return; const ym = d.slice(0, 7), o = mo[ym] || (mo[ym] = [0, 0, 0, 0, 0]); for (let i = 0; i < 5; i++) o[i] += v[i]; });
+      Object.values(mo).forEach(o => { o[4] = o[0] ? o[4] / o[0] : null; });
+      load(mo, e, 'Your region'); $('ck-status').textContent = `Read ${fmt(n)} rows from ${files.length} file${files.length > 1 ? 's' : ''}, kept ${fmt(kept)}. ` + $('ck-status').textContent;
+    } catch (err) { $('ck-verdict').textContent = 'Could not run the test on these files.'; $('ck-status').textContent = err.message; }
+  });
+}
+
 /* ---------- all of India ---------- */
 function initIndia(IN, IG){
   const S = IN.summary; if (!IN.rows.length) return;
   document.getElementById('india').hidden = false;
-  let season = S.seasons[0], year = S.years[S.years.length - 1];
+  const PT = S.partial, YEARS = PT ? [...S.years, PT.year] : S.years;
+  let season = S.seasons[0], year = YEARS[YEARS.length - 1];
   const COL = {timing_break:C.ember, one_indicator:'#F2B38A', no_break:'#B9D6DA', too_few_fires:'#E3E7EB'};
   const LAB = {timing_break:'Timing break: both indicators outside the state\'s 2012–22 range', one_indicator:'One indicator outside', no_break:'No break', too_few_fires:`Too few fires to test (under ${S.min_fires} a season)`};
   const host = document.getElementById('ch-india'); host.style.height = 'auto';
@@ -559,16 +678,23 @@ function initIndia(IN, IG){
       h += '</tbody></table>'; }
     document.getElementById('tbl-india').innerHTML = h;
     const nb = R.filter(r => r.status === 'timing_break').length;
-    document.getElementById('india-caption').textContent = `${sname(season)} ${year}: ${R.length} states have enough fires to test. ${nb} show a timing break, ${R.filter(r => r.status === 'one_indicator').length} have one indicator outside its range, ${R.filter(r => r.status === 'no_break').length} show no break.` + (hit.length ? ' "vs unflagged states" divides the state\'s change by the change in all states that show no flag this season, which are seen by the same satellites; the interval is 95%.' : '');
+    const isPT = PT && year === PT.year && season === PT.season, endTxt = PT ? new Date(PT.end).toLocaleDateString('en-GB', {day:'numeric', month:'long'}) : '';
+    document.getElementById('india-caption').textContent = (isPT ? `This season, 1 October to ${endTxt} ${year} (the last day Suomi NPP delivered data), judged against the same weeks of 2012–2022; near-real-time data. ` : '') + (R.length ? '' : 'No data for this season yet. ') + `${sname(season)} ${year}: ${R.length} states have enough fires to test. ${nb} with a timing break, ${R.filter(r => r.status === 'one_indicator').length} with one indicator outside its range, ${R.filter(r => r.status === 'no_break').length} with no break.` + (hit.length ? ' "vs unflagged states" divides the state\'s change by the change in all states that show no flag this season, which are seen by the same satellites; the interval is 95%.' : '');
   }
   const seg = (id, items, get, set, label) => { const el = document.getElementById(id);
     el.innerHTML = items.map(v => `<button type="button" aria-pressed="${v === get()}">${label(v)}</button>`).join('');
     [...el.children].forEach((b, i) => b.addEventListener('click', () => { set(items[i]); [...el.children].forEach(c => c.setAttribute('aria-pressed', c === b)); draw(); })); };
   seg('india-seasons', S.seasons, () => season, v => season = v, sname);
-  seg('india-years', S.years, () => year, v => year = v, String);
+  seg('india-years', YEARS, () => year, v => year = v, y => PT && y === PT.year ? y + ' so far' : String(y));
   const d = S.data, nt = S.tested[S.seasons[0]];
-  document.getElementById('india-lede').textContent = `Punjab and Haryana are where the shift was reported. Is it happening anywhere else? AgniCal runs the two indicators on ${fmt(d.detections)} detections across India, for every state and three burning seasons. The comparison region changes too: each state is set against the states that show no flag, which are seen by the same drifting satellites.` + (() => { const b = S.breaks[S.seasons[0]], da = (S.drift_alone || {})[S.seasons[0]], y = S.years[S.years.length - 1]; return ` The answer for ${y}: of ${S.tested[S.seasons[0]]} states with enough post-monsoon fires to test, ${b.length ? 'only ' + b.join(' and ') + (b.length === 1 ? ' shows' : ' show') : 'none shows'} a timing break, and no state shows one in the other two seasons.` + (da && da[y] ? ` In the states with no flag, Aqua's ratio stands at ${da[y].toFixed(2)}× its old level: that is what the orbit drift does on its own.` : ''); })();
+  document.getElementById('india-lede').textContent = `Punjab and Haryana are where the shift was reported. Is it happening anywhere else? AgniCal runs the two indicators on ${fmt(d.detections)} detections across India, for every state and three burning seasons. The comparison region changes too: each state is set against the states that show no flag, which are seen by the same drifting satellites.` + (() => { const b = S.breaks[S.seasons[0]], da = (S.drift_alone || {})[S.seasons[0]], y = S.years[S.years.length - 1]; return (PT ? (() => { const p = IN.rows.find(r => r.state === 'Punjab' && r.season === PT.season && r.year === PT.year), v = IN.versus.find(v => v.state === 'Punjab' && v.season === PT.season && v.year === PT.year && v.indicator === 'aqua_over_snpp'); return p ? ` In the season now under way (to ${new Date(PT.end).toLocaleDateString('en-GB', {day:'numeric', month:'long'})} ${PT.year}) the break is still there: Punjab's Aqua ratio is ${p.aqua_x.toFixed(1)}× its old level` + (v ? ` and ${v.ratio.toFixed(1)}× that of unflagged states (${v.ratio_lo.toFixed(1)}–${v.ratio_hi.toFixed(1)})` : '') + '.' : ''; })() : '') + ` For ${y}, the last full year: of ${S.tested[S.seasons[0]]} states with enough post-monsoon fires to test, ${b.length ? 'only ' + b.join(' and ') + (b.length === 1 ? ' shows' : ' show') : 'none shows'} a timing break, and no state shows one in the other two seasons.` + (da && da[y] ? ` In the states with no flag, Aqua's ratio stands at ${da[y].toFixed(2)}× its old level: that is what the orbit drift does on its own.` : ''); })();
   document.getElementById('india-note').textContent = 'A state is tested when Suomi NPP counted at least ' + S.min_fires + ' daytime fires a season on average in 2012–2022. The floor is Aqua\'s later count in Suomi NPP units, shown where it exceeds the count by more than 20%. Seasons that cross the new year are labelled by the year they start.';
+  // 2023, read against the larger control
+  const n23 = document.getElementById('note-2023'), v23 = k => IN.versus.find(v => v.state === 'Punjab' && v.season === S.seasons[0] && v.year === 2023 && v.indicator === k);
+  const a23 = v23('aqua_over_snpp'), g23 = v23('night_share');
+  if (n23 && a23 && g23) n23.textContent = (a23.ratio_lo > 1 && g23.ratio_lo > 1)
+    ? `Against the much larger group of Indian states with no flag (next section), Punjab is distinguishable in 2023 on both: Aqua ratio ${a23.ratio.toFixed(1)}× (${a23.ratio_lo.toFixed(1)}–${a23.ratio_hi.toFixed(1)}), night share ${g23.ratio.toFixed(1)}× (${g23.ratio_lo.toFixed(1)}–${g23.ratio_hi.toFixed(1)}). We read 2023 as the first, smaller step of the shift.`
+    : 'The all-India comparison (next section) does not settle 2023 either.';
   draw();
 }
 
@@ -704,6 +830,8 @@ function initMap(GEO){
   const colNight = (v, max) => v == null ? '#E3E7EB' : rgb(lerp(hex('#F4F1F8'), hex('#3D2F6B'), Math.min(1, v / max)));
   const info = document.getElementById('map-info');
   function describe(p){
+    if (metric === 'blind') return p.floor_factor == null ? `${p.district} (${p.state}): too few fires in 2024–25 to compute.`
+      : `${p.district} (${p.state}): at Aqua's later hour, ${p.floor_factor.toFixed(1)}× as many fires as Suomi NPP counted in 2024–25. The count says ${pct(p.count_change_pct)} against 2017–21; the floor says no more than ${pct(p.floor_change_pct)}.`;
     return metric === 'change'
       ? `${p.district} (${p.state}): ${fmt(p.ref_mean_2017_21)} detections a season in 2017–21, ${fmt(p[lastKey])} in ${lastYear}` +
         (p.ref_mean_2017_21 >= MIN_REF ? ` (${pct(p.change_pct)}).` : '; too few fires for a percentage change to mean much.')
@@ -713,17 +841,22 @@ function initMap(GEO){
     const nightMax = Math.max(0.02, ...feats.map(f => f.properties.night_share_recent || 0));
     feats.forEach((f, i) => {
       const p = f.properties;
-      paths[i].setAttribute('fill', metric === 'change' ? colChange(p.change_pct, p.ref_mean_2017_21) : colNight(p.night_share_recent, nightMax));
+      paths[i].setAttribute('fill', metric === 'change' ? colChange(p.change_pct, p.ref_mean_2017_21) : metric === 'blind' ? (p.floor_factor == null ? '#E3E7EB' : rgb(lerp(hex('#FBEDE3'), hex('#B23A00'), Math.min(1, (p.floor_factor - 1) / 3.5)))) : colNight(p.night_share_recent, nightMax));
       paths[i].innerHTML = ''; const t = document.createElementNS(NS, 'title'); t.textContent = describe(p); paths[i].append(t);
       paths[i].onmouseenter = paths[i].onfocus = () => { info.textContent = describe(p); paths[i].setAttribute('stroke', C.ink); paths[i].setAttribute('stroke-width', '2'); };
       paths[i].onmouseleave = paths[i].onblur = () => { paths[i].setAttribute('stroke', '#ffffff'); paths[i].setAttribute('stroke-width', '1'); };
     });
     const lg = document.getElementById('map-legend');
-    lg.innerHTML = metric === 'change'
+    lg.innerHTML = metric === 'blind'
+      ? `<div style="display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:.85rem;color:var(--muted)"><span>1× (count misses nothing Aqua can show)</span><span style="flex:0 0 220px;height:10px;border-radius:5px;background:linear-gradient(90deg,#FBEDE3,#B23A00)"></span><span>4.5× or more</span><span style="margin-left:14px;display:inline-flex;align-items:center;gap:6px"><span style="width:14px;height:10px;border-radius:3px;background:#E3E7EB;display:inline-block"></span>too few fires</span></div>`
+      : metric === 'change'
       ? `<div style="display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:.85rem;color:var(--muted)"><span>−100% or less</span><span style="flex:0 0 220px;height:10px;border-radius:5px;background:linear-gradient(90deg,#5B4B8A,#F4F1F8,#E8590C)"></span><span>+100% or more</span><span style="margin-left:14px;display:inline-flex;align-items:center;gap:6px"><span style="width:14px;height:10px;border-radius:3px;background:#E3E7EB;display:inline-block"></span>fewer than 200 fires a season</span></div>`
       : `<div style="display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:.85rem;color:var(--muted)"><span>0%</span><span style="flex:0 0 220px;height:10px;border-radius:5px;background:linear-gradient(90deg,#F4F1F8,#3D2F6B)"></span><span>${(100 * nightMax).toFixed(0)}% of fires seen at night</span></div>`;
     info.textContent = 'Point at or tab to a district for its numbers.';
-    document.getElementById('map-caption').textContent = metric === 'change'
+    document.getElementById('map-caption').textContent = metric === 'blind'
+      ? (() => { const top = feats.map(f => f.properties).filter(p => p.floor_factor != null).sort((a, b) => b.floor_factor - a.floor_factor), lo = top[top.length - 1];
+          return `Where the count is most misleading. For each district: Aqua's later daytime count in 2024–25, converted to Suomi NPP units, divided by what Suomi NPP counted. In ${top[0].district} the later look shows ${top[0].floor_factor.toFixed(1)}× the count, so a fall the count puts at ${pct(top[0].count_change_pct)} is no more than ${pct(top[0].floor_change_pct)}. In ${lo.district} it is ${lo.floor_factor.toFixed(1)}×. A low value does not prove a real fall: burning there may have moved later than even Aqua looks. District values come from small counts and carry no interval, so read the pattern, not the decimals.`; })()
+      : metric === 'change'
       ? `Paddy-season detections (VIIRS-equivalent) in ${lastYear} against each district's 2017–21 average. ${lastYear} has a timing break, so a fall here marks where burning left the satellites' viewing hours as well as where it may truly have dropped.`
       : 'Share of each district\'s VIIRS paddy-season detections made on the ~01:30 night pass, 2024–26 average. Darker districts are where burning has shifted most into the evening.';
   }

@@ -59,8 +59,8 @@ def _season_year(date: pd.Series, rng) -> pd.Series:
     return y if lo <= hi else y.where(date.dt.dayofyear >= lo, y - 1)
 
 
-def season_slice(det: pd.DataFrame, season: str) -> pd.DataFrame:
-    rng = SEASONS[season]
+def season_slice(det: pd.DataFrame, season: str, seasons=None) -> pd.DataFrame:
+    rng = (seasons or SEASONS)[season]
     d = det[_in_season(det["date"].dt.dayofyear, rng)].copy()
     d["syear"] = _season_year(d["date"], rng)
     return d
@@ -81,12 +81,13 @@ def _counts(d: pd.DataFrame, by: list[str]) -> pd.DataFrame:
     return out.reset_index()
 
 
-def state_indicators(det: pd.DataFrame, baseline=controls.BASELINE, k=3.0) -> pd.DataFrame:
+def state_indicators(det: pd.DataFrame, baseline=controls.BASELINE, k=3.0, seasons=None) -> pd.DataFrame:
     """One row per state, season and year, with indicators, timing-break flags and the floor."""
     rows = []
     base = list(baseline)
-    for season in SEASONS:
-        d = season_slice(det.dropna(subset=["state"]), season)
+    seasons = seasons or SEASONS
+    for season in seasons:
+        d = season_slice(det.dropna(subset=["state"]), season, seasons)
         c = _counts(d, ["state", "syear"]).rename(columns={"syear": "year"})
         c = c[c["snpp_day"] > 0]
         c["aqua_over_snpp"] = c["aqua_day"] / c["snpp_day"]
@@ -131,14 +132,15 @@ def state_indicators(det: pd.DataFrame, baseline=controls.BASELINE, k=3.0) -> pd
     return out
 
 
-def versus_rest(det: pd.DataFrame, ind: pd.DataFrame, years=(2023, 2024, 2025), n_boot=300, seed=0) -> pd.DataFrame:
+def versus_rest(det: pd.DataFrame, ind: pd.DataFrame, years=(2023, 2024, 2025), n_boot=300, seed=0,
+                seasons=None) -> pd.DataFrame:
     """For every state and season with at least one flag in `years`: how much further did the state
     move than the rest of India, which is seen by the same drifting satellites? Day-level bootstrap."""
     hits = ind[ind["year"].isin(years) & (ind["n_flags"] >= 1)][["state", "season"]].drop_duplicates()
     out = []
     flagged = {se: set(g["state"]) for se, g in hits.groupby("season")}
     for season, hs in hits.groupby("season"):
-        d = season_slice(det.dropna(subset=["state"]), season)
+        d = season_slice(det.dropna(subset=["state"]), season, seasons)
         d = d.assign(date=pd.to_datetime(d["syear"].astype(str) + "-01-01")
                      + pd.to_timedelta((d["date"] - pd.to_datetime(d["date"].dt.year.astype(str) + "-01-01")).dt.days
                                        + np.where(d["date"].dt.year > d["syear"], 366, 0), unit="D"))
@@ -206,3 +208,40 @@ def load_counted(path: Path, sensor="VIIRS", satellite="SNPP", res=0.1) -> pd.Da
     return pd.DataFrame({"date": pd.to_datetime(c["date"]), "time": 0, "lat": (c["iy"] + 0.5) * res,
                          "lon": (c["ix"] + 0.5) * res, "sensor": sensor, "satellite": satellite,
                          "daynight": c["daynight"], "n": c["n"].astype(int)})
+
+
+def common_end(det: pd.DataFrame) -> pd.Timestamp:
+    """Last date on which both Aqua and Suomi NPP have data."""
+    aq = det.loc[(det["sensor"] == "MODIS") & (det["satellite"] == "Aqua"), "date"].max()
+    sn = det.loc[(det["sensor"] == "VIIRS") & (det["satellite"] == "SNPP"), "date"].max()
+    return min(aq, sn)
+
+
+def season_to_date(det: pd.DataFrame, year: int, n_boot=300):
+    """The current post-monsoon season so far. Every year is cut to the same calendar window
+    (1 Oct to the last day both satellites have data), so `year` is judged against the same part
+    of the season in 2012-2022. Returns (indicators for `year`, versus-unflagged rows, end date)."""
+    end = common_end(det)
+    if end.year != year or end.dayofyear < 288:      # need at least two weeks of October
+        return pd.DataFrame(), pd.DataFrame(), end
+    name = "Post-monsoon (Oct-Nov)"
+    seasons = {name: (274, int(end.dayofyear))}
+    d = det[det["date"] <= end]
+    ind = state_indicators(d, seasons=seasons)
+    vs = versus_rest(d, ind, years=(year,), n_boot=n_boot, seasons=seasons)
+    return ind[ind["year"] == year].copy(), vs, end
+
+
+def monthly_by_state(det: pd.DataFrame) -> dict:
+    """Small table for the in-browser checker: per state and month, Aqua day, Suomi NPP day,
+    Suomi NPP night, Suomi NPP all, and Aqua's mean local viewing hour. Cut at the common end date."""
+    end = common_end(det)
+    d = det[(det["date"] <= end) & (det["date"] >= "2012-01-20")].dropna(subset=["state"])
+    c = _counts(d.assign(ym=d["date"].dt.strftime("%Y-%m")), ["state", "ym"])
+    out = {}
+    for r in c.itertuples():
+        if r.aqua_day + r.snpp_all == 0:
+            continue
+        out.setdefault(r.state, {})[r.ym] = [int(r.aqua_day), int(r.snpp_day), int(r.snpp_night), int(r.snpp_all),
+                                             None if not np.isfinite(r.aqua_time_ist) else round(float(r.aqua_time_ist), 2)]
+    return {"end": str(end.date()), "states": out}

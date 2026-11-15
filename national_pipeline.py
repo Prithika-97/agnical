@@ -26,12 +26,20 @@ def _r(v, nd=3):
     return None if v is None or (isinstance(v, float) and not np.isfinite(v)) else round(float(v), nd)
 
 
-def export(ind: pd.DataFrame, vs: pd.DataFrame, info: dict, out: Path, years=(2023, 2024, 2025)) -> dict:
+def export(ind: pd.DataFrame, vs: pd.DataFrame, info: dict, out: Path, years=(2023, 2024, 2025), now=None, monthly=None) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     states = gpd.read_file(national.STATE_FILE)
     states["geometry"] = states.geometry.simplify(0.05, preserve_topology=True)
     (out / "india_states.json").write_text(states.to_json(drop_id=True, to_wgs84=True))
     rows = []
+    partial = None
+    if now is not None and len(now[0]):
+        cur, cur_vs, end = now
+        partial = {"year": int(cur["year"].iloc[0]), "end": str(end.date()), "season": cur["season"].iloc[0]}
+        ind = pd.concat([ind[~((ind["year"] == partial["year"]) & (ind["season"] == partial["season"]))], cur], ignore_index=True)
+        vs = pd.concat([vs, cur_vs], ignore_index=True)
+    if monthly is not None:
+        (out / "checker_states.json").write_text(json.dumps(monthly))
     for r in ind[ind["year"] >= 2012].itertuples():
         rows.append({"state": r.state, "season": r.season, "year": int(r.year), "snpp_day": int(r.snpp_day),
                      "snpp_night": int(r.snpp_night), "aqua_day": int(r.aqua_day),
@@ -49,7 +57,7 @@ def export(ind: pd.DataFrame, vs: pd.DataFrame, info: dict, out: Path, years=(20
         conf = {f"{s}|{se}|{y}": {"both": bool(a), "n": int(n)} for (s, se, y), (a, n) in ok.iterrows()}
     last = ind[ind["year"] == max(years)]
     summary = {
-        "years": list(years), "seasons": list(national.SEASONS), "min_fires": national.MIN_FIRES,
+        "years": list(years), "seasons": list(national.SEASONS), "partial": partial, "min_fires": national.MIN_FIRES,
         "data": info,
         "tested": {s: int(((last["season"] == s) & last["testable"]).sum()) for s in national.SEASONS},
         "breaks": {s: sorted(last[(last["season"] == s) & (last["status"] == "timing_break")]["state"]) for s in national.SEASONS},
@@ -81,12 +89,17 @@ def main():
     ind = national.state_indicators(det)
     vs = national.versus_rest(det, ind, n_boot=a.boot)
     config.OUT_DIR.mkdir(parents=True, exist_ok=True)
+    now = national.season_to_date(det, year=int(det["date"].max().year), n_boot=a.boot)
+    if len(now[0]):
+        print(f"      Season so far, to {now[2].date()}:")
+        print(now[0][now[0]["n_flags"] >= 1][["state", "snpp_day", "aqua_over_snpp_x", "night_share_x", "n_flags", "status"]].round(2).to_string(index=False))
+        now[0].to_csv(config.OUT_DIR / "india_season_to_date.csv", index=False)
     ind.to_csv(config.OUT_DIR / "india_state_indicators.csv", index=False)
     vs.to_csv(config.OUT_DIR / "india_versus_rest.csv", index=False)
     print("[4/4] Writing site data ...")
     meta = {"detections": int(det["n"].sum()), "first": str(det["date"].min().date()), "last": str(det["date"].max().date()),
             "by_satellite": {k: int(v) for k, v in det.groupby("satellite")["n"].sum().items()}}
-    s = export(ind, vs, meta, a.site)
+    s = export(ind, vs, meta, a.site, now=now, monthly=national.monthly_by_state(det))
     print(json.dumps(s["breaks"], indent=1))
     print(f"Done in {time.time() - t0:.0f}s")
 
