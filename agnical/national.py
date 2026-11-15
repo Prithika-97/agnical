@@ -70,14 +70,17 @@ def _counts(d: pd.DataFrame, by: list[str]) -> pd.DataFrame:
     day = d["daynight"] == "D"
     snpp = (d["sensor"] == "VIIRS") & (d["satellite"] == "SNPP")
     aqua = (d["sensor"] == "MODIS") & (d["satellite"] == "Aqua")
+    terra = (d["sensor"] == "MODIS") & (d["satellite"] == "Terra")
     t = diurnal.to_ist_hours(d["time"])
     w = d["n"].to_numpy() if "n" in d.columns else 1     # 'n' = detections per row, for pre-counted input
     g = pd.DataFrame({**{k: d[k] for k in by},
                       "aqua_day": (aqua & day).astype(int) * w, "snpp_day": (snpp & day).astype(int) * w,
                       "snpp_night": (snpp & ~day).astype(int) * w, "snpp_all": snpp.astype(int) * w,
-                      "aqua_t": t.where(aqua & day)}).groupby(by)
-    out = g[["aqua_day", "snpp_day", "snpp_night", "snpp_all"]].sum()
+                      "terra_day": (terra & day).astype(int) * w,
+                      "aqua_t": t.where(aqua & day), "terra_t": t.where(terra & day)}).groupby(by)
+    out = g[["aqua_day", "snpp_day", "snpp_night", "snpp_all", "terra_day"]].sum()
     out["aqua_time_ist"] = g["aqua_t"].median()
+    out["terra_time_ist"] = g["terra_t"].median()
     return out.reset_index()
 
 
@@ -234,7 +237,8 @@ def season_to_date(det: pd.DataFrame, year: int, n_boot=300):
 
 def monthly_by_state(det: pd.DataFrame) -> dict:
     """Small table for the in-browser checker: per state and month, Aqua day, Suomi NPP day,
-    Suomi NPP night, Suomi NPP all, and Aqua's mean local viewing hour. Cut at the common end date."""
+    Suomi NPP night, Suomi NPP all, Aqua's local viewing hour, Terra day and Terra's local viewing
+    hour. Cut at the common end date."""
     end = common_end(det)
     d = det[(det["date"] <= end) & (det["date"] >= "2012-01-20")].dropna(subset=["state"])
     c = _counts(d.assign(ym=d["date"].dt.strftime("%Y-%m")), ["state", "ym"])
@@ -243,5 +247,7 @@ def monthly_by_state(det: pd.DataFrame) -> dict:
         if r.aqua_day + r.snpp_all == 0:
             continue
         out.setdefault(r.state, {})[r.ym] = [int(r.aqua_day), int(r.snpp_day), int(r.snpp_night), int(r.snpp_all),
-                                             None if not np.isfinite(r.aqua_time_ist) else round(float(r.aqua_time_ist), 2)]
+                                             None if not np.isfinite(r.aqua_time_ist) else round(float(r.aqua_time_ist), 2),
+                                             int(r.terra_day),
+                                             None if not np.isfinite(r.terra_time_ist) else round(float(r.terra_time_ist), 2)]
     return {"end": str(end.date()), "states": out}

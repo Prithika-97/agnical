@@ -102,7 +102,7 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   <div class="hero">
     <h1>Punjab and Haryana's farm fires moved later in the day. The satellites that count them didn't.</h1>
     <p class="dek" id="dek">NASA's fire satellites pass over Punjab and Haryana at fixed hours. AgniCal joins their 23-year record into one scale, tests the shift against the same satellites' view across the border and in every state of India, and puts a floor under what the count now misses.</p>
-    <p class="dek" style="font-size:1rem;margin-top:10px"><b style="font-family:var(--display)">What is new here.</b> Others showed with all-day geostationary satellites that burning now peaks in the late afternoon. AgniCal confirms it from NASA's polar data alone, separates it from the drift of the satellites' own orbits, and builds it into the 2003–2025 record. It adds three things of its own: the result for the season now under way, in every Indian state; a blind-spot index for every district; and a checker that runs the same test on FIRMS files for any region on Earth.</p>
+    <p class="dek" style="font-size:1rem;margin-top:10px"><b style="font-family:var(--display)">What is new here.</b> Others showed with all-day geostationary satellites that burning now peaks in the late afternoon. AgniCal confirms it from NASA's polar data alone, separates it from the drift of the satellites' own orbits, and builds it into the 2003–2025 record. It adds things of its own: the drifting-satellite scanner (Terra and Aqua are the same sensor sliding in opposite directions, so each season samples two extra hours of the fire day); the result for the season now under way, in every Indian state; a blind-spot index for every district; and a checker that runs the same test on FIRMS files for any region on Earth.</p>
 
     <div class="finds" id="finds"></div>
 
@@ -162,7 +162,22 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
     <div class="fig" style="margin-top:14px"><h3 id="ck-verdict" style="font-size:1.25rem;line-height:1.3"></h3><div id="ck-chart" style="height:300px;margin-top:8px"></div></div>
     <div id="ck-table"></div>
     <p style="margin:12px 0 0"><button type="button" id="ck-copy" style="font:inherit;font-family:var(--display);padding:8px 14px;border-radius:10px;border:1px solid var(--rule);background:var(--panel);cursor:pointer">Copy this result</button> <span class="small" id="ck-copied" aria-live="polite"></span></p>
-    <p class="small">How to get files: at firms.modaps.eosdis.nasa.gov/download, request "MODIS C6.1" and "SUOMI VIIRS C2" as CSV for your area, 2012 onward, and unzip them. The test needs at least eight seasons between 2012 and 2022 with 300 or more Suomi NPP daytime fires each. The same two indicators and thresholds are used as everywhere on this page.</p>
+    <div class="prose" style="margin-top:44px">
+      <h3 style="font-size:1.5rem">A day of fire, scanned by two drifting satellites</h3>
+      <p>NASA stopped holding Terra's and Aqua's orbits in place, and their viewing hours have been sliding apart ever since: Terra earlier each year, Aqua later. That is usually treated as damage to the record. Here it is used as an instrument. Terra and Aqua carry the same sensor, so each season they give two looks at the same fires at two different hours, and each year the hours are new. Set against Suomi NPP, which stays near 13:30, the points trace how fire activity rises and falls through the day, without a geostationary satellite.</p>
+    </div>
+    <div class="fig"><div id="ck-scan" style="height:360px"></div></div>
+    <p class="caption" id="ck-scan-cap"></p>
+    <div class="fig" style="margin-top:22px">
+      <h3>Move the satellite</h3>
+      <div class="controls" style="margin-top:10px">
+        <label>Season <select id="mv-year"></select></label>
+        <label style="flex:1 1 320px;display:flex;align-items:center;gap:12px">Passes at <input type="range" id="mv-time" step="1" style="flex:1"> <output id="mv-out" for="mv-time" style="font-family:var(--display);font-weight:700;font-size:1.3rem;min-width:3.2em"></output></label>
+      </div>
+      <p style="font-family:var(--display);font-size:1.6rem;line-height:1.25;margin:16px 0 4px" id="mv-count" aria-live="polite"></p>
+      <p class="small" id="mv-note" style="margin:0"></p>
+    </div>
+    <p class="small" style="margin-top:22px">How to get files: at firms.modaps.eosdis.nasa.gov/download, request "MODIS C6.1" and "SUOMI VIIRS C2" as CSV for your area, 2012 onward, and unzip them. The test needs at least eight seasons between 2012 and 2022 with 300 or more Suomi NPP daytime fires each. The same two indicators and thresholds are used as everywhere on this page.</p>
   </div>
 </section>
 
@@ -564,10 +579,13 @@ function assessRegion(months, m0, m1, end){
   const inWin = m => m0 <= m1 ? (m >= m0 && m <= m1) : (m >= m0 || m <= m1);
   const Y = {};
   Object.entries(months).forEach(([ym, v]) => { const y = +ym.slice(0, 4), m = +ym.slice(5, 7); if (!inWin(m)) return;
-    const sy = (m0 > m1 && m <= m1) ? y - 1 : y, o = Y[sy] || (Y[sy] = {year:sy, aq:0, sd:0, sn:0, sa:0, tw:0, tn:0});
-    o.aq += v[0]; o.sd += v[1]; o.sn += v[2]; o.sa += v[3]; if (v[4] != null && v[0]) { o.tw += v[4] * v[0]; o.tn += v[0]; } });
+    const sy = (m0 > m1 && m <= m1) ? y - 1 : y, o = Y[sy] || (Y[sy] = {year:sy, aq:0, sd:0, sn:0, sa:0, tw:0, tn:0, te:0, ew:0, en:0});
+    o.aq += v[0]; o.sd += v[1]; o.sn += v[2]; o.sa += v[3]; if (v[4] != null && v[0]) { o.tw += v[4] * v[0]; o.tn += v[0]; }
+    o.te += v[5] || 0; if (v[6] != null && v[5]) { o.ew += v[6] * v[5]; o.en += v[5]; } });
+  // Terra's viewing hour per calendar year from all months, for seasons in which Terra saw nothing
+  const TY = {}; Object.entries(months).forEach(([ym, v]) => { if (v[6] != null && v[5]) { const o = TY[+ym.slice(0, 4)] || (TY[+ym.slice(0, 4)] = [0, 0]); o[0] += v[6] * v[5]; o[1] += v[5]; } });
   const rows = Object.values(Y).filter(r => r.sd > 0).sort((a, b) => a.year - b.year);
-  rows.forEach(r => { r.aqr = r.aq / r.sd; r.ns = r.sn / r.sa; r.t = r.tn ? r.tw / r.tn : null; });
+  rows.forEach(r => { r.aqr = r.aq / r.sd; r.ns = r.sn / r.sa; r.t = r.tn ? r.tw / r.tn : null; r.tT = r.en ? r.ew / r.en : (TY[r.year] ? TY[r.year][0] / TY[r.year][1] : null); });
   const B = rows.filter(r => r.year >= 2012 && r.year <= 2022), sum = (a, k) => a.reduce((s, r) => s + r[k], 0);
   const meanFires = B.length ? sum(B, 'sd') / B.length : 0;
   if (B.length < 8 || meanFires < 300 || sum(B, 'aq') === 0) return {ok:false, rows, n:B.length, meanFires};
@@ -584,7 +602,8 @@ function assessRegion(months, m0, m1, end){
     r.floor = r.aq * r0 / r.sd; r.floorLo = r.aq * Math.min(...ry) / r.sd; r.floorHi = r.aq * Math.max(...ry) / r.sd;
     const lastY = m0 <= m1 ? r.year : r.year + 1;
     r.partial = end ? (lastY > endY || (lastY === endY && m1 >= endM)) : false; });
-  return {ok:true, rows, meanFires, nightOK};
+  rows.forEach(r => { r.k = r0; });
+  return {ok:true, rows, meanFires, nightOK, k:r0};
 }
 function initChecker(DATA){
   const MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -610,6 +629,40 @@ function initChecker(DATA){
     let h = '<table><thead><tr><th>Season</th><th class="num">Suomi NPP day fires</th><th class="num">Aqua looks at (local time)</th><th class="num">Aqua ratio, × old level</th><th class="num">Night share, × old level</th><th class="num">Floor</th><th>Reading</th></tr></thead><tbody>';
     R.filter(r => r.year >= 2019).forEach(r => { h += `<tr><td>${r.year}${r.partial ? ' (incomplete)' : ''}</td><td class="num">${fmt(r.sd)}</td><td class="num">${r.t == null ? '–' : hhmm(r.t)}</td><td class="num">${xf(r.ax)}</td><td class="num">${xf(r.nx)}</td><td class="num">${r.floor > 1.2 ? r.floor.toFixed(1) + '× (' + r.floorLo.toFixed(1) + '–' + r.floorHi.toFixed(1) + ')' : '–'}</td><td>${{timing_break:'Timing break', one_indicator:'One indicator out', no_break:'No break'}[r.status]}</td></tr>`; });
     $('ck-table').innerHTML = h + '</tbody></table>';
+    drawScan(A, R, win);
+  }
+  // ---- the day, scanned by drift: every point is one season's look by Terra or Aqua, in units of the ~13:30 count
+  let MV = null;
+  function drawScan(A, R, win){
+    const pts = []; R.forEach(r => { if (r.tT != null && r.te > 0) pts.push({x:r.tT, y:r.te * A.k / r.sd, year:r.year, sat:'Terra'}); if (r.t != null && r.aq > 0) pts.push({x:r.t, y:r.aq * A.k / r.sd, year:r.year, sat:'Aqua'}); });
+    const old = pts.filter(p => p.year <= 2022), rec = pts.filter(p => p.year > 2022);
+    const tr = (P, name, color, size, text) => ({type:'scatter', mode:text ? 'markers+text' : 'markers', x:P.map(p => p.x), y:P.map(p => p.y), name, marker:{color, size, line:{color:'#fff', width:1}},
+      text:text ? P.map(p => String(p.year)) : undefined, textposition:'top center', textfont:{size:11, color},
+      customdata:P.map(p => [p.sat, p.year, hhmm(p.x)]), hovertemplate:'%{customdata[0]}, %{customdata[1]}, at %{customdata[2]}: %{y:.2f}× the 13:30 count<extra></extra>'});
+    Plotly.newPlot('ck-scan', [tr(old, '2012–2022', '#8FA3AD', 8, false), tr(rec, '2023 onward', C.ember, 11, true),
+      {type:'scatter', mode:'markers', x:[13.5], y:[1], name:'Suomi NPP, about 13:30 (the reference)', marker:{color:C.sat, size:13, symbol:'diamond'}, hovertemplate:'Suomi NPP at about 13:30: 1<extra></extra>'}],
+      {...BASE, legend:{orientation:'h', y:1.14, x:0}, shapes:[{type:'line', xref:'paper', x0:0, x1:1, y0:1, y1:1, line:{color:C.muted, width:1, dash:'dot'}}],
+       xaxis:{...BASE.xaxis, title:{text:'Local time the satellite looked'}, range:[9, 16.6], tickvals:[9,10,11,12,13,14,15,16], ticktext:['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00']},
+       yaxis:{...BASE.yaxis, type:'log', tickvals:[0.003,0.01,0.03,0.1,0.3,1,3,10], ticktext:['0.003','0.01','0.03','0.1','0.3','1','3','10'], title:{text:'Fires seen, × the 13:30 count (log scale)'}}}, CFG);
+    const aqOld = old.filter(p => p.sat === 'Aqua'), aqRec = rec.filter(p => p.sat === 'Aqua'), teOld = old.filter(p => p.sat === 'Terra');
+    const mean = a => a.reduce((s, p) => s + p.y, 0) / a.length, lastA = aqRec[aqRec.length - 1];
+    $('ck-scan-cap').textContent = `${label}, ${win}. Each point is one season: how many fires Terra or Aqua saw, converted to Suomi NPP units and divided by Suomi NPP's own count that season. ` +
+      (teOld.length ? `Before the drift, Terra at about ${hhmm(teOld[0].x)} saw ${mean(teOld).toFixed(2)}× the early-afternoon count${mean(teOld) < 0.3 ? ': mornings were quiet' : ''}. ` : '') +
+      (lastA ? `Aqua, by ${lastA.year} looking at ${hhmm(lastA.x)}, saw ${lastA.y.toFixed(1)}×. ` : '') +
+      `Where the recent points follow the old ones, the daily rhythm is unchanged and the sliding satellites are simply reading further along the same curve. Where they leave it, the rhythm itself has changed. Terra and Aqua are the same instrument but not identical in sensitivity or viewing conditions, and a morning scene is cooler than an afternoon one, so small differences should not be over-read.`;
+    // ---- move the satellite
+    const ys = R.filter(r => r.t != null && r.tT != null && r.aq > 0), selY = $('mv-year'), sl = $('mv-time');
+    if (!ys.length) { $('mv-count').textContent = 'Not enough Terra and Aqua looks to move the satellite here.'; return; }
+    const keep = MV && ys.find(r => r.year === +selY.value) ? +selY.value : (ys.filter(r => !r.partial).pop() || ys[ys.length - 1]).year;
+    selY.innerHTML = ys.map(r => `<option value="${r.year}">${r.year}${r.partial ? ' (incomplete)' : ''}</option>`).join(''); selY.value = keep;
+    MV = () => { const r = ys.find(q => q.year === +selY.value), P = [[r.tT, Math.max(r.te, 0.5) * A.k], [13.5, r.sd], [r.t, r.aq * A.k]].sort((a, b) => a[0] - b[0]);
+      sl.min = Math.ceil(P[0][0] * 60); sl.max = Math.floor(P[2][0] * 60); if (+sl.value < +sl.min || +sl.value > +sl.max || !sl.dataset.set) { sl.value = 13.5 * 60; sl.dataset.set = 1; }
+      const t = +sl.value / 60, i = t <= P[1][0] ? 0 : 1, f = (t - P[i][0]) / (P[i + 1][0] - P[i][0]);
+      const n = Math.exp(Math.log(P[i][1]) + f * (Math.log(P[i + 1][1]) - Math.log(P[i][1])));
+      $('mv-out').textContent = hhmm(t);
+      $('mv-count').innerHTML = `A satellite passing at ${hhmm(t)} would have counted about <b style="color:${C.ember}">${fmt(Math.round(n))}</b> fires.`;
+      $('mv-note').textContent = `${label}, ${win} ${r.year}, in Suomi NPP units. Three real looks: Terra at ${hhmm(r.tT)} (${fmt(Math.round(r.te * A.k))}), Suomi NPP at about 13:30 (${fmt(r.sd)}), Aqua at ${hhmm(r.t)} (${fmt(Math.round(r.aq * A.k))}). Values between them are interpolated; nothing is known after ${hhmm(r.t)}, which is where the slider stops.`; };
+    selY.onchange = () => { sl.dataset.set = ''; MV(); }; sl.oninput = MV; MV();
   }
   $('ck-copy').addEventListener('click', () => { const t = $('ck-verdict').textContent + ' ' + $('ck-status').textContent + ' Source: AgniCal timing test on NASA FIRMS MODIS C6.1 and VIIRS S-NPP data.';
     (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => $('ck-copied').textContent = 'Copied.').catch(() => $('ck-copied').textContent = 'Select the headline above to copy it.'); });
@@ -633,11 +686,13 @@ function initChecker(DATA){
           n++; const inst = (c[ix.instrument] || '').toUpperCase(), sat = (c[ix.satellite] || '').toUpperCase(), conf = (c[ix.confidence] || '').toLowerCase();
           if (ix.type != null && c[ix.type] !== '' && c[ix.type] !== '0') return;
           let k = null;
-          if (inst === 'MODIS') { if (!(sat === 'AQUA' || sat === 'A')) return; if (+conf < 30) return; k = 'aq'; }
+          if (inst === 'MODIS') { if (+conf < 30) return; k = (sat === 'AQUA' || sat === 'A') ? 'aq' : (sat === 'TERRA' || sat === 'T') ? 'te' : null; if (!k) return; }
           else { if (!(sat === 'N' || sat === 'SNPP' || sat.includes('SUOMI') || inst === 'SNPP')) return; if (conf.startsWith('l')) return; k = 'sn'; }
-          const d = c[ix.acq_date], dn = c[ix.daynight] === 'D', o = day[d] || (day[d] = [0, 0, 0, 0, 0]);
-          if (d > maxD[k]) maxD[k] = d; kept++;
-          if (k === 'aq') { if (dn) { o[0]++; const t = c[ix.acq_time].padStart(4, '0'); o[4] += ((+t.slice(0, 2) + +t.slice(2) / 60 + (+c[ix.longitude]) / 15) % 24 + 24) % 24; } }
+          const d = c[ix.acq_date], dn = c[ix.daynight] === 'D', o = day[d] || (day[d] = [0, 0, 0, 0, 0, 0, 0]);
+          if (k !== 'te' && d > maxD[k]) maxD[k] = d; kept++;
+          const lt = () => { const t = c[ix.acq_time].padStart(4, '0'); return ((+t.slice(0, 2) + +t.slice(2) / 60 + (+c[ix.longitude]) / 15) % 24 + 24) % 24; };
+          if (k === 'aq') { if (dn) { o[0]++; o[4] += lt(); } }
+          else if (k === 'te') { if (dn) { o[5]++; o[6] += lt(); } }
           else { o[3]++; if (dn) o[1]++; else o[2]++; } };
         for (;;) { const {value, done} = await reader.read(); if (done) break; buf += value; const parts = buf.split(/\r?\n/); buf = parts.pop(); parts.forEach(line);
           $('ck-status').textContent = `Reading ${f.name}: ${fmt(n)} rows …`; }
@@ -645,8 +700,8 @@ function initChecker(DATA){
       }
       if (!maxD.aq || !maxD.sn) throw new Error('Need both a MODIS file (with Aqua) and a VIIRS Suomi NPP file. Found ' + (maxD.aq ? 'only MODIS.' : maxD.sn ? 'only VIIRS.' : 'neither.'));
       const e = maxD.aq < maxD.sn ? maxD.aq : maxD.sn, mo = {};
-      Object.entries(day).forEach(([d, v]) => { if (d > e || d < '2012-01-20') return; const ym = d.slice(0, 7), o = mo[ym] || (mo[ym] = [0, 0, 0, 0, 0]); for (let i = 0; i < 5; i++) o[i] += v[i]; });
-      Object.values(mo).forEach(o => { o[4] = o[0] ? o[4] / o[0] : null; });
+      Object.entries(day).forEach(([d, v]) => { if (d > e || d < '2012-01-20') return; const ym = d.slice(0, 7), o = mo[ym] || (mo[ym] = [0, 0, 0, 0, 0, 0, 0]); for (let i = 0; i < 7; i++) o[i] += v[i]; });
+      Object.values(mo).forEach(o => { o[4] = o[0] ? o[4] / o[0] : null; o[6] = o[5] ? o[6] / o[5] : null; });
       load(mo, e, 'Your region'); $('ck-status').textContent = `Read ${fmt(n)} rows from ${files.length} file${files.length > 1 ? 's' : ''}, kept ${fmt(kept)}. ` + $('ck-status').textContent;
     } catch (err) { $('ck-verdict').textContent = 'Could not run the test on these files.'; $('ck-status').textContent = err.message; }
   });
