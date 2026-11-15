@@ -5,7 +5,7 @@ from agnical import diurnal as D
 
 
 def simulate(peak_by_year, width=0.8, days=60, seed=0):
-    """Passes from three satellites at known times, fires drawn from a known daily curve."""
+    """Passes at known times, counts drawn from a known daily curve."""
     rng = np.random.default_rng(seed)
     rows = []
     for y, mu in peak_by_year.items():

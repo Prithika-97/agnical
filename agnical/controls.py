@@ -1,16 +1,12 @@
-"""Checks that separate a real change in burning from a change in the satellites.
+"""Separate a change in burning from a change in the satellites.
 
-1. Comparison regions. The same satellites, on the same passes, also see the farm fires just
-   across the border in Pakistani Punjab and in neighbouring Indian states. Anything caused by
-   an orbit drift or by viewing geometry must show up there too.
-2. Difference in differences. How much more did an indicator change in the study area than in
-   the comparison region, with a day-level bootstrap interval.
-3. Near-nadir check. The Aqua / Suomi NPP ratio recomputed from small-pixel (near-nadir)
-   detections only.
-4. Late-view floor. Aqua's later pass, converted to Suomi NPP units with the 2012-2022 ratio:
-   a lower bound on what Suomi NPP would have counted had it looked at Aqua's hour.
-5. VIIRS hand-over. Suomi NPP stopped delivering data on 2 Nov 2026; how NOAA-20 / NOAA-21
-   counts convert to Suomi NPP units.
+1. Comparison regions: Pakistani Punjab strip, and Indian states with no flag. Same sensors,
+   same passes, so orbit drift or view geometry must appear there as well.
+2. Difference in differences (study / control, each against its 2012-22 level); day-level bootstrap.
+3. Near-nadir check: Aqua / SNPP ratio from small-pixel detections only.
+4. Late-view floor: Aqua day count x 2012-22 SNPP/Aqua ratio. Lower bound on the SNPP count
+   at Aqua's hour.
+5. VIIRS hand-over: NOAA-20/21 to SNPP units (SNPP data delivery ended 2026-11-02).
 """
 from __future__ import annotations
 
@@ -32,7 +28,7 @@ NADIR_SCAN = {"MODIS": 1.3, "VIIRS": 0.42}   # pixel width (km) below which a de
 
 
 def build_region_file(adm1_path: Path, out: Path = REGION_FILE, bbox=config.BBOX) -> gpd.GeoDataFrame:
-    """One-off: cut the download box into the study area and comparison regions."""
+    """Cut the download box into study and comparison regions. Run once."""
     a1 = gpd.read_file(adm1_path)
     bx = box(*bbox)
     name = a1["shapeName"]
@@ -61,7 +57,7 @@ def assign_region(det: pd.DataFrame, regions: gpd.GeoDataFrame | None = None) ->
 
 
 def region_indicators(det: pd.DataFrame) -> pd.DataFrame:
-    """The model-free indicators and the timing-break test, run separately for every region."""
+    """Indicators and timing-break test, per region."""
     out = []
     for r, g in det.dropna(subset=["region"]).groupby("region"):
         ind = diurnal.indicators(g)
@@ -93,9 +89,8 @@ def _stat(t: pd.DataFrame, num: str, den: str) -> pd.Series:
 
 def diff_in_diff(det: pd.DataFrame, study=STUDY, control=PAKISTAN, years=(2023, 2024, 2025),
                  n_boot=500, seed=0) -> pd.DataFrame:
-    """For each indicator and year: (study / its 2012-22 level) divided by (control / its 2012-22
-    level). 1 means both regions changed alike, as a satellite effect would make them. Days are
-    resampled within each year, the same days for both regions."""
+    """Per indicator and year: (study / 2012-22 level) / (control / 2012-22 level). A value of 1 means
+    both regions moved together, i.e. a satellite effect. Days resampled within year, same days in both."""
     daily = _daily(det[det["region"].isin([study, control])])
     wide = daily.pivot_table(index=["year", "date"], columns="region",
                              values=["aqua_day", "snpp_day", "snpp_night", "snpp_all"], fill_value=0)
@@ -140,7 +135,7 @@ def diff_in_diff(det: pd.DataFrame, study=STUDY, control=PAKISTAN, years=(2023, 
 
 
 def nadir_check(det: pd.DataFrame) -> pd.DataFrame:
-    """Aqua / Suomi NPP daytime ratio from near-nadir detections only (small pixels)."""
+    """Aqua / SNPP daytime ratio, near-nadir detections only."""
     d = det[det["date"].dt.dayofyear.between(*SEASON_DOY) & (det["daynight"] == "D")]
     d = d.assign(year=d["date"].dt.year)
     aq = d[(d["satellite"] == "Aqua") & (d["sensor"] == "MODIS")]
@@ -155,10 +150,9 @@ def nadir_check(det: pd.DataFrame) -> pd.DataFrame:
 
 
 def late_view_floor(ind: pd.DataFrame) -> pd.DataFrame:
-    """Aqua's daytime count in Suomi NPP units, using the Suomi NPP / Aqua ratio of 2012-2022,
-    when both looked at about 13:40. From 2023 Aqua looks later, so this is what Suomi NPP would
-    have counted at Aqua's hour: a floor on peak-hour activity, because burning now peaks later
-    still. The range comes from the lowest and highest yearly ratio in 2012-2022."""
+    """Aqua day count in SNPP units, using the 2012-22 SNPP/Aqua ratio (both near 13:40 then).
+    From 2023 Aqua looks later, so this is the SNPP count expected at Aqua's hour: a floor, since
+    the peak is later still. Range: lowest and highest yearly ratio, 2012-22."""
     b = ind[ind["year"].isin(list(BASELINE)) & (ind["snpp_day"] > 0)]
     r_year = b["snpp_day"] / b["aqua_day"]
     r0 = b["snpp_day"].sum() / b["aqua_day"].sum()
@@ -173,9 +167,8 @@ def late_view_floor(ind: pd.DataFrame) -> pd.DataFrame:
 
 
 def viirs_window_test(det: pd.DataFrame) -> pd.DataFrame:
-    """A test that uses VIIRS alone. On days when VIIRS passes both before and after 13:30
-    (its swath is wide enough for two looks ~100 min apart), compare the two counts. A steeper
-    rise through the window would mean burning is building up later."""
+    """VIIRS-only test. On days with VIIRS passes before and after 13:30 (swath overlap, ~100 min
+    apart) compare the two counts; a steeper rise means burning builds up later."""
     p = diurnal.build_passes(det[det["sensor"] == "VIIRS"])
     p["late"] = p["t"] >= 13.5
     g = p.groupby(["year", "date", "late"]).agg(n=("n", "sum"), t=("t", "mean")).unstack().dropna()
@@ -191,9 +184,8 @@ def viirs_window_test(det: pd.DataFrame) -> pd.DataFrame:
 
 
 def handover(det: pd.DataFrame, new_sats=("NOAA20", "NOAA21")) -> pd.DataFrame:
-    """Suomi NPP daytime detections per detection by each newer VIIRS satellite, on days in the
-    paddy season when both observed. Multiply a newer satellite's count by this to continue the
-    record in Suomi NPP units."""
+    """SNPP day detections per NOAA-20/21 detection, paddy-season days with both. Multiply the newer
+    count by this to continue the record in SNPP units."""
     d = det[(det["sensor"] == "VIIRS") & (det["daynight"] == "D")
             & det["date"].dt.dayofyear.between(*SEASON_DOY)]
     c = d.groupby(["date", "satellite"]).size().unstack(fill_value=0)

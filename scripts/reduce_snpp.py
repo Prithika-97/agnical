@@ -1,9 +1,8 @@
-"""Shrink the India Suomi NPP download so it can be uploaded on a slow connection.
+"""Reduce the India SNPP download to counts per 0.1 deg cell, date and day/night.
 
-Run:  python reduce_snpp.py
-Reads DL_FIRE_SV-C2_847520.zip (or the unfinished-looking 'Unconfirmed ... .crdownload' copy)
-from the same folder as this script and writes india_snpp_counts.csv.gz next to it:
-fire detections counted per 0.1-degree cell, date and day/night. Uses only Python's standard library.
+Usage: python reduce_snpp.py
+Reads DL_FIRE_SV-C2_847520.zip (or the .crdownload copy) next to this script, writes
+india_snpp_counts.csv.gz. Standard library only.
 """
 import csv, glob, gzip, io, os, sys, zipfile
 from collections import Counter

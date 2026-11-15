@@ -1,4 +1,4 @@
-"""Read NASA FIRMS archive / NRT CSV files for MODIS and VIIRS into one clean table."""
+"""Read FIRMS archive / NRT CSVs (MODIS, VIIRS) into one table."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -15,8 +15,7 @@ _MODIS_SAT = {"T": "Terra", "TERRA": "Terra", "A": "Aqua", "AQUA": "Aqua"}
 
 
 def detect_sensor(columns, instrument=None) -> str:
-    """Identify the sensor. Archive downloads use 'brightness' for both sensors, so the
-    'instrument' column decides when it is present."""
+    """Sensor from the 'instrument' column when present (archive files use 'brightness' for both)."""
     cols = {c.strip().lower() for c in columns}
     if instrument is not None and len(instrument):
         inst = str(pd.Series(instrument).dropna().astype(str).str.upper().mode().iat[0])
@@ -29,7 +28,7 @@ def detect_sensor(columns, instrument=None) -> str:
 
 
 def normalize(df: pd.DataFrame, source_file: str = "") -> pd.DataFrame:
-    """Map one raw FIRMS file onto a common schema."""
+    """One FIRMS file to the common schema."""
     df = df.rename(columns=lambda c: c.strip().lower())
     sensor = detect_sensor(df.columns, df["instrument"] if "instrument" in df.columns else None)
     sat = df["satellite"].astype(str).str.strip().str.upper()
@@ -69,8 +68,7 @@ def apply_filters(det: pd.DataFrame, bbox=config.BBOX,
 
 
 def drop_nrt_overlap(det: pd.DataFrame) -> pd.DataFrame:
-    """Where standard (sp) and near-real-time (nrt) data cover the same day for the same
-    satellite, keep sp."""
+    """Where SP and NRT overlap for a satellite and day, keep SP."""
     sp_days = det.loc[det["product"] == "sp", ["sensor", "satellite", "date"]].drop_duplicates()
     sp_days["_sp"] = True
     det = det.merge(sp_days, on=["sensor", "satellite", "date"], how="left")

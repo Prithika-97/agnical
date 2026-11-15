@@ -1,9 +1,8 @@
-"""Where does a fixed MODIS(Aqua) -> Suomi NPP mapping stay valid after Aqua's orbit drift?
+"""Does a fixed Aqua -> SNPP conversion survive Aqua's drift?
 
-Fit each state-season's Suomi NPP / Aqua day-fire ratio on 2012-2022 (before the drift), apply it to
-2023-2025 Aqua counts and compare with what Suomi NPP counted. Reported for Punjab + Haryana and for
-all other testable states. Also tests an hour-aware version (ratio adjusted for Aqua's viewing hour,
-slope fitted outside the northwest on 2012-2022); it did not improve the result and is recorded as such.
+Fit SNPP/Aqua day-fire ratio per state-season on 2012-22, apply to 2023-25 Aqua counts, compare with
+SNPP. Punjab+Haryana vs other testable states. An hour-aware variant (slope fitted outside the
+northwest, 2012-22) gave no improvement; result recorded, not used.
 """
 import json
 from pathlib import Path

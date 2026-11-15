@@ -1,4 +1,4 @@
-"""Real state and district boundaries for the study area (Punjab and Haryana, India).
+"""State and district boundaries, Punjab and Haryana.
 
 Source: geoBoundaries gbOpen IND (https://www.geoboundaries.org).
   ADM1 states: DataMeet India community / Election Commission of India, CC BY 2.5 IN.
@@ -19,7 +19,7 @@ STATES = {"Punjab": "Punjab", "Haryāna": "Haryana"}
 
 
 def build_boundary_file(adm1_path: Path, adm2_path: Path, out: Path = BOUNDARY_FILE) -> gpd.GeoDataFrame:
-    """One-off: cut the national files down to the districts of Punjab and Haryana."""
+    """Cut the national files to Punjab and Haryana districts. Run once."""
     a1 = gpd.read_file(adm1_path)
     a2 = gpd.read_file(adm2_path)
     st = a1[a1["shapeName"].isin(STATES)].assign(state=lambda d: d["shapeName"].map(STATES))
@@ -40,7 +40,7 @@ def load_districts(path: Path = BOUNDARY_FILE) -> gpd.GeoDataFrame:
 
 def assign_district(df: pd.DataFrame, districts: gpd.GeoDataFrame | None = None,
                     lon="lon", lat="lat") -> pd.DataFrame:
-    """Add 'district' and 'state' columns by point-in-polygon; rows outside both states get NaN."""
+    """Add 'district' and 'state' by point-in-polygon; NaN outside both states."""
     districts = load_districts() if districts is None else districts
     pts = gpd.GeoDataFrame(df[[lon, lat]].copy(), geometry=gpd.points_from_xy(df[lon], df[lat]), crs="EPSG:4326")
     j = gpd.sjoin(pts, districts[["district", "state", "geometry"]].to_crs("EPSG:4326"),

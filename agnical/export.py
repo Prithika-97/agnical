@@ -1,5 +1,4 @@
-"""Write the small JSON / GeoJSON files the AgniCal website reads. Every number on the site
-comes from these files, and every number in these files is computed here from the data."""
+"""Write the JSON / GeoJSON files read by docs/index.html. All numbers on the site come from here."""
 from __future__ import annotations
 
 import json

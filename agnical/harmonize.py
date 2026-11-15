@@ -1,4 +1,4 @@
-"""Learn MODIS -> VIIRS-equivalent detections from the overlap years and validate honestly."""
+"""MODIS -> VIIRS-equivalent detections, fit on the overlap years."""
 from __future__ import annotations
 
 import numpy as np
@@ -14,14 +14,13 @@ TARGET = "v_count"
 
 
 def overlap(panel: pd.DataFrame, years=config.TRAIN_YEARS) -> pd.DataFrame:
-    """Rows where both MODIS and Suomi NPP observed. By default only the years before Aqua's
-    orbit drift (2012-2022), when MODIS sampled the same hour of the day it always had."""
+    """Rows where MODIS and SNPP both observed; default 2012-2022, before the Aqua drift."""
     ov = panel[panel["m_valid"] & panel["v_valid"]]
     return ov if years is None else ov[ov["year"].isin(list(years))]
 
 
 class GlobalRatio:
-    """Baseline 1: one scale factor for the whole region."""
+    """Baseline 1: one regional scale factor."""
     name = "global_ratio"
 
     def fit(self, df):
@@ -33,7 +32,7 @@ class GlobalRatio:
 
 
 class CellRatio:
-    """Baseline 2: a scale factor per cell, shrunk toward the regional factor."""
+    """Baseline 2: per-cell factor, shrunk toward the regional one."""
     name = "cell_ratio"
 
     def __init__(self, k=20.0):
@@ -52,7 +51,7 @@ class CellRatio:
 
 
 class GBMHarmonizer:
-    """Main model: gradient-boosted trees with a Poisson objective (counts)."""
+    """LightGBM, Poisson objective."""
     name = "gbm_poisson"
 
     def __init__(self, n_estimators=400, fast=False):
@@ -81,7 +80,7 @@ def make_models(fast=False):
 
 
 def cross_validate(panel, fast=False, years=None, log=print) -> pd.DataFrame:
-    """Leave-one-year-out over the overlap years. Returns held-out rows with predictions."""
+    """Leave-one-year-out CV; returns held-out rows with predictions."""
     ov = overlap(panel)
     years = sorted(ov["year"].unique()) if years is None else years
     out = []
@@ -100,7 +99,7 @@ def season_periods(season: str) -> list[int]:
 
 
 def evaluate(cv: pd.DataFrame) -> dict:
-    """Metrics at cell level, regional level, seasonal totals and peak timing."""
+    """Metrics: cell, region, season total, peak timing."""
     names = [c.removeprefix("pred_") for c in cv.columns if c.startswith("pred_")]
     y = cv[TARGET].to_numpy()
     res = {"n_rows": int(len(cv)), "years": sorted(int(v) for v in cv["year"].unique()),
@@ -154,7 +153,7 @@ def evaluate(cv: pd.DataFrame) -> dict:
 
 
 def ratio_stability(panel: pd.DataFrame) -> pd.DataFrame:
-    """Observed VIIRS/MODIS ratio per overlap year: is the relationship stable over time?"""
+    """Observed VIIRS/MODIS ratio per overlap year."""
     ov = overlap(panel, years=None)
     g = ov.groupby("year")[[TARGET, "m_count"]].sum()
     g["ratio"] = g[TARGET] / g["m_count"].replace(0, np.nan)
@@ -162,8 +161,7 @@ def ratio_stability(panel: pd.DataFrame) -> pd.DataFrame:
 
 
 def drift_test(panel: pd.DataFrame, fast=False) -> pd.DataFrame:
-    """Train on 2012-2022, predict 2023 onward: how badly does the MODIS->VIIRS mapping break
-    once Aqua's overpass drifts later? Returns per-year season totals, observed vs predicted."""
+    """Train 2012-22, predict 2023 on. Season totals, observed vs predicted."""
     ov_all = overlap(panel, years=None)
     train = overlap(panel)
     test = ov_all[~ov_all["year"].isin(list(config.TRAIN_YEARS))].copy()
@@ -183,7 +181,7 @@ def drift_test(panel: pd.DataFrame, fast=False) -> pd.DataFrame:
 
 
 def build_harmonized(panel: pd.DataFrame, fast=False):
-    """Fit on all overlap years; return a VIIRS-equivalent record for every year."""
+    """Fit on all overlap years; VIIRS-equivalent record for every year."""
     ov = overlap(panel)
     model = GBMHarmonizer(fast=fast).fit(ov)
     h = panel[panel["m_valid"] | panel["v_valid"]].copy()

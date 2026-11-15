@@ -1,4 +1,4 @@
-"""Write a results summary straight from the computed metrics, so no number is typed by hand."""
+"""Results summary written from the computed metrics."""
 from __future__ import annotations
 
 from pathlib import Path

@@ -1,4 +1,4 @@
-"""Project-wide settings. Change the region here; nothing else is region-specific."""
+"""Settings. The study region is set here and nowhere else."""
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent

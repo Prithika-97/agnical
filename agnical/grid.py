@@ -1,4 +1,4 @@
-"""Aggregate point detections onto a regular grid of cells x years x 8-day periods."""
+"""Grid point detections: cell x year x 8-day period."""
 from __future__ import annotations
 
 import numpy as np
@@ -31,10 +31,8 @@ def build_panel(det: pd.DataFrame, bbox=config.BBOX, res=config.GRID_RES,
                 modis_first_year=config.MODIS_FIRST_YEAR,
                 viirs_start=config.VIIRS_START, end_date=None,
                 viirs_end=config.VIIRS_END) -> pd.DataFrame:
-    """Return one row per active cell x year x period with MODIS features and VIIRS target.
-
-    Cells with no detection by either sensor in the whole record are left out; every
-    other cell gets all years and periods, with zeros where nothing was detected.
+    """One row per active cell x year x period: MODIS features, VIIRS target.
+    Cells with no detection in the whole record are dropped; the rest get all periods, zeros included.
     """
     ix0, iy0, nx, ny = _grid_index(bbox, res)
     det = det.copy()
@@ -123,5 +121,5 @@ def build_panel(det: pd.DataFrame, bbox=config.BBOX, res=config.GRID_RES,
 
 
 def stitched_raw(panel: pd.DataFrame) -> pd.Series:
-    """The naive record: raw MODIS until VIIRS starts, raw VIIRS after."""
+    """Naive record: raw MODIS before VIIRS, raw VIIRS after."""
     return panel["v_count"].where(panel["v_valid"], panel["m_count"])

@@ -1,7 +1,5 @@
-"""Generate SYNTHETIC FIRMS-like CSVs to test the pipeline before the real data arrives.
-
-The files are named SYNTHETIC_*.csv. The pipeline and the app detect that name and
-label every output as test data. Never present results from these files as findings.
+"""Synthetic FIRMS-like CSVs for pipeline tests. Named SYNTHETIC_*.csv; outputs are labelled as
+test data. Not for results.
 
 Usage:  python scripts/make_synthetic.py --out data/raw
 """

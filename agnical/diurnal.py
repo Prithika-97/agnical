@@ -1,25 +1,18 @@
-"""Reconstruct WHEN in the day crop fires burn, using only polar-orbiting satellites.
+"""Time of day of crop fires from polar-orbiting satellites only.
 
-Idea
-----
-Each satellite pass is a snapshot at a known local time. On the same day, the ratio of
-fires seen by two passes at different times depends only on (a) the sensors' relative
-sensitivity and (b) the shape of the day's burning curve, because the day's total burning
-cancels out. MODIS on Terra (late morning) and Aqua (early afternoon, drifting to ~15:00
-IST by 2025) are the same instrument, and VIIRS (Suomi NPP, NOAA-20, NOAA-21) passes
-around 13:30. Comparing them day by day lets us estimate the hour of peak burning for
-every season since 2003, and how much of a season's fire activity a ~13:30 snapshot sees.
+Each pass is a snapshot at a known local time. On one day the ratio of two passes depends on
+relative sensor sensitivity and the shape of the daily burning curve; the day's total cancels.
+Terra and Aqua carry the same MODIS; VIIRS (SNPP, NOAA-20/21) passes near 13:30. Day-by-day
+comparison gives the peak hour per season since 2003.
 
 Model
 -----
 For pass p on day d, with local time t_p and sensor class k(p):
     n_dp ~ Poisson( exp(alpha_d + beta_k(p) + q_y(t_p)) )
     q_y(t) = -(t - mu_y)^2 / (2 sigma_y^2)
-alpha_d (day's total burning) is removed exactly by conditioning on each day's total
-(conditional multinomial likelihood). beta_MODIS = 0 for both Terra and Aqua (same
-instrument); one beta per VIIRS satellite. mu_y is the peak hour for season y and sigma_y
-the width of its burning window. Widths share a weak hierarchical prior around a common
-value, so years with few viewing times borrow strength. Uncertainty: day-level bootstrap.
+alpha_d (daily total) drops out by conditioning on each day's total (multinomial likelihood).
+beta_MODIS = 0 for Terra and Aqua (same instrument); one beta per VIIRS satellite. mu_y: peak hour,
+sigma_y: window width, with a weak hierarchical prior on sigma. Uncertainty: day-level bootstrap.
 """
 from __future__ import annotations
 
@@ -40,7 +33,7 @@ def sensor_class(det: pd.DataFrame) -> pd.Series:
 
 
 def build_passes(det: pd.DataFrame, doy_range=(274, 334), gap_min=30) -> pd.DataFrame:
-    """One row per daytime satellite pass in the season: day, sensor class, local time, fire count."""
+    """One row per daytime pass: day, sensor class, local time, count."""
     d = det[(det["daynight"] == "D")].copy()
     d["doy"] = d["date"].dt.dayofyear
     d = d[d["doy"].between(*doy_range)]
@@ -130,7 +123,7 @@ def fit(passes: pd.DataFrame, classes=None, x0=None, prior_sd=PRIOR_SD_LOG_SIGMA
 
 
 def bootstrap(passes: pd.DataFrame, base_fit: dict, n_boot=100, seed=0, log=None):
-    """Resample days within each year; refit; return draws of mu per year and sigma."""
+    """Resample days within year, refit; draws of mu and sigma."""
     rng = np.random.default_rng(seed)
     days = passes[["date", "year"]].drop_duplicates().reset_index(drop=True)
     by_year = {y: g["date"].to_numpy() for y, g in days.groupby("year")}
@@ -149,12 +142,8 @@ def bootstrap(passes: pd.DataFrame, base_fit: dict, n_boot=100, seed=0, log=None
 
 
 def summarize(base_fit: dict, draws: pd.DataFrame, passes: pd.DataFrame) -> pd.DataFrame:
-    """Peak hour of the burning that satellites can see, per season, with a 90% interval.
-
-    A peak is reported only when the satellites' viewing times on both sides constrain it:
-    the interval must be narrower than 2 hours and end before the latest viewing time + 30 min.
-    Otherwise the season is marked 'beyond view' and only the lower end is kept: the peak is
-    at least that late, and the exact hour cannot be measured from polar orbit."""
+    """Peak hour per season, 90% interval. Reported only if the interval is under 2 h and ends before
+    the latest pass + 30 min; otherwise 'beyond view' and only the lower end is kept."""
     span = passes.groupby("year").agg(t_first=("t", "min"), t_last=("t", "max"), n_sat=("sat", "nunique"))
     rows = []
     for y in base_fit["years"]:
@@ -187,11 +176,8 @@ DIAGNOSTIC_INDICATORS = [("terra_over_aqua", -1)]
 
 
 def timing_breaks(ind: pd.DataFrame, baseline=range(2012, 2023), k=3.0) -> pd.DataFrame:
-    """Flag seasons whose model-free indicators leave the 2012-2022 envelope.
-
-    For each indicator: how many times its baseline mean it is, and whether it is more than
-    k robust standard deviations (1.4826 * MAD) outside the baseline median. A season is a
-    timing break when both flag indicators are outside, and on watch when one is."""
+    """Flag seasons outside the 2012-22 envelope. Per indicator: ratio to baseline mean, and distance
+    from the baseline median in robust SDs (1.4826 * MAD). Break: both flag indicators outside; watch: one."""
     out = ind[["year"]].copy()
     flags = []
     for col, direction in FLAG_INDICATORS + DIAGNOSTIC_INDICATORS:
@@ -217,11 +203,11 @@ def hhmm(h: float) -> str:
 
 
 def indicators(det: pd.DataFrame, doy_range=(274, 334)) -> pd.DataFrame:
-    """Model-free evidence, per kharif season: what each satellite saw and when it looked.
+    """Per kharif season, what each satellite saw and when.
 
-    aqua_over_snpp: Aqua daytime fires / Suomi NPP daytime fires, same season.
-    night_share:    share of Suomi NPP fires seen on the ~01:30 night pass.
-    terra_over_aqua: morning (Terra) fires / early-afternoon (Aqua) fires.
+    aqua_over_snpp:  Aqua day fires / SNPP day fires.
+    night_share:     SNPP night-pass (~01:30) fires / all SNPP fires.
+    terra_over_aqua: Terra day fires / Aqua day fires (diagnostic only).
     """
     d = det.copy()
     d["doy"] = d["date"].dt.dayofyear

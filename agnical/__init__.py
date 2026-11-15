@@ -1,2 +1,2 @@
-"""AgniCal: a consistent, multi-decade burning calendar from MODIS and VIIRS active-fire data."""
+"""AgniCal: MODIS/VIIRS active-fire harmonization and overpass-timing diagnostics."""
 __version__ = "0.1.0"

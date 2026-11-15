@@ -1,4 +1,4 @@
-"""Turn the harmonized grid into a burning calendar, season statistics and anomaly flags."""
+"""Burning calendar, season statistics and anomaly flags from the harmonized grid."""
 from __future__ import annotations
 
 import numpy as np
@@ -15,7 +15,7 @@ def in_bbox(df: pd.DataFrame, bbox) -> pd.Series:
 
 
 def regional_series(h: pd.DataFrame, bbox) -> pd.DataFrame:
-    """Sum over cells in the box: one row per year x period."""
+    """Sum over cells in the box; one row per year x period."""
     sub = h[in_bbox(h, bbox)]
     cols = ["viirs_equiv", "stitched_raw", "m_count", "v_count", "model_pred"]
     cols = [c for c in cols if c in sub.columns]
@@ -27,7 +27,7 @@ def regional_series(h: pd.DataFrame, bbox) -> pd.DataFrame:
 
 
 def season_stats(series: pd.DataFrame, season: str) -> pd.DataFrame:
-    """Per year: season total, peak period, and the 10%-90% burning window."""
+    """Per year: season total, peak period, 10-90% window."""
     sp = season_periods(season)
     rows = []
     for y, g in series[series["period"].isin(sp)].groupby("year"):
@@ -50,7 +50,7 @@ def season_stats(series: pd.DataFrame, season: str) -> pd.DataFrame:
 
 
 def anomaly(stats: pd.DataFrame, year: int, z_flag: float = config.ANOMALY_Z) -> dict | None:
-    """Compare one season with all other years of the harmonized record."""
+    """One season against all other years."""
     if year not in set(stats["year"]):
         return None
     cur = stats[stats["year"] == year].iloc[0]

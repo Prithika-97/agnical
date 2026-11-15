@@ -6,8 +6,7 @@ from agnical import diurnal as D
 
 
 def _det(rng, shift_study=True):
-    """Two regions seen by the same satellites. From 2024 the study region burns later:
-    Aqua (drifted late) sees more, and more fires last into the night. The control does not change."""
+    """Two regions, same satellites. From 2024 the study region burns later; the control does not."""
     rows = []
     for region in (K.STUDY, K.PAKISTAN):
         for y in range(2012, 2026):

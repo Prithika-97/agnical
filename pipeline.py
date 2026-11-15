@@ -1,4 +1,4 @@
-"""AgniCal v2 pipeline: NASA FIRMS CSVs -> harmonized record + burning-time analysis -> site data.
+"""AgniCal pipeline: FIRMS CSVs -> harmonized record, timing analysis, site data.
 
 Usage:
     python pipeline.py              # reads data/raw, writes data/processed, reports and docs/data

@@ -1,4 +1,4 @@
-"""All-India run: the timing test for every state and burning season.
+"""All-India run of the timing test.
 
     python national_pipeline.py --raw data/raw_india
 
