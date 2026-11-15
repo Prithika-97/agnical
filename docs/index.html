@@ -227,6 +227,12 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
       <h3 style="font-size:1.5rem">Where a fixed MODIS-to-VIIRS conversion can be trusted</h3>
       <p>Harmonizing the two sensors means converting an Aqua count into what Suomi NPP would have counted. We fit that ratio for each state and season on 2012–2022, before the drift, then apply it to 2023–2025 and compare with what Suomi NPP actually counted. Where the error stays small, the fixed conversion is safe to use. Where it grows, the conversion has stopped being valid and the region should be flagged instead of converted.</p>
     </div>
+    <div class="prose" style="margin-top:36px">
+      <h3 style="font-size:1.5rem">Checked against a published geostationary study</h3>
+      <p>The one outside check available is Jethva's 2026 study of the same region with Korea's GK-2A satellite, which watches every hour and so does not depend on overpass time. It reports that VIIRS missed roughly 56 percent of fires in 2024 and 64 percent in 2025, and that burning peaks around 16:00 to 18:00 IST. We never used GK-2A, so these are independent of our numbers.</p>
+    </div>
+    <div id="tbl-x"></div>
+    <p class="caption" id="x-note"></p>
     <div id="tbl-harm"></div>
     <p class="caption" id="harm-note"></p>
   </div>
@@ -384,7 +390,7 @@ Promise.all(['summary.json','timing.json','record.json','calendar.json','distric
     initStrip(S, T, ty);
     drawRecord(S, R, ty);
     drawEvidence(S, T, ty, CT);
-    drawFloor(S, CT);
+    drawFloor(S, CT); drawCross(CT);
     Promise.all([j('india.json'), j('india_states.json')]).then(([IN, IG]) => initIndia(IN, IG)).catch(() => {});
     j('checker_states.json').then(initChecker).catch(() => initChecker(null));
     j('harmonize_india.json').then(drawHarm).catch(() => {});
@@ -569,6 +575,14 @@ function drawEvidence(S, T, ty, CT){
 }
 
 /* ---------- three findings ---------- */
+function drawCross(CT){
+  const L = CT.late_view, pub = {2024:56, 2025:64};
+  let h = '<table><thead><tr><th>Year</th><th class="num">Suomi NPP counted</th><th class="num">Aqua at its later hour, in Suomi NPP units</th><th class="num">At least missed (AgniCal)</th><th class="num">Missed, GK-2A study (rough)</th></tr></thead><tbody>';
+  [2024, 2025].forEach(y => { const r = L.find(q => q.year === y); if (!r) return;
+    h += `<tr><td>${y}</td><td class="num">${fmt(r.snpp_day)}</td><td class="num">${fmt(Math.round(r.aqua_as_snpp))}</td><td class="num">${Math.round((1 - r.snpp_day / r.aqua_as_snpp) * 100)}%</td><td class="num">about ${pub[y]}%</td></tr>`; });
+  document.getElementById('tbl-x').innerHTML = h + '</tbody></table>';
+  document.getElementById('x-note').textContent = `Our figure is a lower bound on what Suomi NPP missed, from direct counts: one minus what it counted over what Aqua's later pass implies. The published figure is a rough estimate from trends over a differently drawn box, so exact agreement is not expected. They agree in size and in the rise from 2024 to 2025, and ours is above the published figure in 2025. Both place the missing fires in the late afternoon: Aqua at ${hhmm(L[L.length - 1].aqua_time_ist)} still sees about ${(L[L.length - 1].factor).toFixed(1)} times what the early-afternoon pass does and the count keeps rising with each later hour.`;
+}
 function drawHarm(H){
   const R = H.rows.filter(r => r.season.startsWith('Post-monsoon')), yrs = [...new Set(R.map(r => r.year))].sort(), grp = ['Punjab and Haryana', 'Other states'];
   const pct = v => (v > 0 ? '+' : '') + v.toFixed(0) + '%';

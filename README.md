@@ -147,3 +147,7 @@ by `regions.build_boundary_file` and `controls.build_region_file`.
 
 Code and text were drafted with Claude (Anthropic) and reviewed, run and checked by the author.
 All figures are computed from NASA data by this pipeline. No AI-generated images or data are used.
+
+## Outside check
+
+Jethva (2026, Remote Sensing 18(10) 1506) used Korea's hourly GK-2A satellite and estimated, roughly, that VIIRS missed about 56% of fires in 2024 and 64% in 2025 in northwest India. AgniCal's lower bound from polar data alone is 52% (2024) and 72% (2025). They agree in size and in the rise; the published figure is a rough trend-based estimate over a different box, so exact agreement is not expected. AgniCal never used GK-2A data.
