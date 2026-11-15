@@ -346,7 +346,18 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
         <li>The 2026 season is judged on 1 October to 2 November only, from near-real-time data, which NASA later replaces with a standard product. In the checker, an incomplete season is shown but compared with full seasons, so read it with care.</li>
         <li>The district blind-spot index rests on small counts and has no interval.</li>
         <li>The all-India run uses MODIS and Suomi NPP only, with Suomi NPP fires counted per 0.1° cell and assigned to the state of the cell centre, so a small share near state borders falls to the neighbour.</li>
-        <li>We couldn't get geostationary fire data during the hackathon, so the 16:00–18:00 peak is quoted from published studies, not computed here.</p>
+        <li>We couldn't get geostationary fire data during the hackathon, so the 16:00–18:00 peak is quoted from published studies, not computed here.</li>
+        <li>District borders are from 2021, before Malerkotla and Charkhi Dadri were created; their fires are counted under the districts they were formed from.</li>
+        <li>Near-real-time 2026 files carry no fire-type field, so a few static heat sources may remain in this season's counts.</li>
+      </ul>
+      <h3 style="margin-top:28px">Sources</h3>
+      <ul class="small">
+        <li>NASA FIRMS active fire data: MODIS Collection 6.1 (MCD14ML), VIIRS 375 m (VNP14IMGML, VJ114IMGML, VJ214IMG). <a href="https://firms.modaps.eosdis.nasa.gov/download/">firms.modaps.eosdis.nasa.gov</a></li>
+        <li>Boundaries: geoBoundaries gbOpen IND. States: DataMeet / Election Commission of India (CC BY 2.5 IN). Districts: Pathways Data / lgdirectory.gov.in (ODbL 1.0). <a href="https://www.geoboundaries.org">geoboundaries.org</a></li>
+        <li id="pub-sources"></li>
+      </ul>
+      <h3 style="margin-top:28px">Use of AI</h3>
+      <p class="small">Code and text were drafted with Claude (Anthropic) and reviewed, run and checked by the author. All figures are computed from NASA data by the open-source pipeline; no AI-generated images or data are used.</p>
     </div>
   </div>
 </section>
