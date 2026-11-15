@@ -17,7 +17,9 @@ MODIS-VIIRS record that everyone uses, and answers with NASA's polar data alone:
    counts so the 2012 switch no longer looks like a jump in burning.
 2. **A record that knows when it stops being comparable.** Two model-free indicators flag
    seasons in which burning left the satellites' viewing hours.
-3. **The drifting-satellite scanner.** Terra and Aqua are the same sensor sliding in opposite directions (about 10:00 and 15:15 local now), so each season samples two extra hours of the fire day. Counts at each hour, in Suomi NPP 13:30 units, trace the daily fire cycle; the page has a "Move the satellite" slider. Caveat: the two satellites differ slightly in sensitivity and scene conditions, and the slider interpolates between real looks, it is not a measurement away from them.
+3. **The drifting-satellite scanner, with an India-wide control.** The scanner and region checker open on All India and can switch to any state or to the pool of every state outside Punjab and Haryana, which stays on the old curve while Punjab leaves it.
+
+   The scanner itself: Terra and Aqua are the same sensor sliding in opposite directions (about 10:00 and 15:15 local now), so each season samples two extra hours of the fire day. Counts at each hour, in Suomi NPP 13:30 units, trace the daily fire cycle; the page has a "Move the satellite" slider. Caveat: the two satellites differ slightly in sensitivity and scene conditions, and the slider interpolates between real looks, it is not a measurement away from them.
 4. **A control for the satellites themselves.** Aqua and Terra both drifted in the same years.
    Every test is repeated on the farm fires just across the border in Pakistani Punjab, which
    the same satellites see on the same passes.

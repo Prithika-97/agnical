@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AgniCal: when Punjab and Haryana burn, and when satellites look</title>
-<meta name="description" content="A consistent 2003-2026 crop-fire record for Punjab and Haryana from NASA MODIS and VIIRS, and evidence that burning moved later in the day than the satellites look.">
+<title>AgniCal: when India's crop fires burn, and when satellites look</title>
+<meta name="description" content="A consistent 2003-2026 crop-fire record for India from NASA MODIS and VIIRS, a timing test run on every state, and evidence that burning in Punjab and Haryana moved later in the day than the satellites look.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
@@ -100,8 +100,8 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   </header>
 
   <div class="hero">
-    <h1>Punjab and Haryana's farm fires moved later in the day. The satellites that count them didn't.</h1>
-    <p class="dek" id="dek">NASA's fire satellites pass over Punjab and Haryana at fixed hours. AgniCal joins their 23-year record into one scale, tests the shift against the same satellites' view across the border and in every state of India, and puts a floor under what the count now misses.</p>
+    <h1>We tested all of India. Only Punjab and Haryana's farm fires slipped out of the satellites' view.</h1>
+    <p class="dek" id="dek">NASA's fire satellites pass over India at fixed hours, and those hours have drifted. AgniCal joins their 23-year record into one scale and runs one timing test on every Indian state, against the same satellites' view across the border and in the states that show no break. The shift is concentrated in the northwest, where Punjab and Haryana burn later in the day than the satellites look, and it puts a floor under what the count now misses.</p>
     <p class="dek" style="font-size:1rem;margin-top:10px"><b style="font-family:var(--display)">What is new here.</b> Others showed with all-day geostationary satellites that burning now peaks in the late afternoon. AgniCal confirms it from NASA's polar data alone, separates it from the drift of the satellites' own orbits, and builds it into the 2003–2025 record. It adds things of its own: the drifting-satellite scanner (Terra and Aqua are the same sensor sliding in opposite directions, so each season samples two extra hours of the fire day); the result for the season now under way, in every Indian state; a blind-spot index for every district; and a checker that runs the same test on FIRMS files for any region on Earth.</p>
 
     <div class="finds" id="finds"></div>
@@ -150,7 +150,7 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   <div class="wrap">
     <div class="prose">
       <h2>Check your own region</h2>
-      <p>Aqua's drift affects every MODIS fire record on Earth. This tool runs the timing test on any place: pick an Indian state, or drop in NASA FIRMS archive files (CSV) for MODIS and VIIRS Suomi NPP for your own area. Files are read in your browser and are not sent anywhere.</p>
+      <p>Aqua's drift affects every MODIS fire record on Earth. This tool runs the timing test on any place: pick All India, one Indian state, or the control pool of every state outside Punjab and Haryana, or drop in NASA FIRMS archive files (CSV) for MODIS and VIIRS Suomi NPP for your own area. Files are read in your browser and are not sent anywhere.</p>
     </div>
     <div class="controls" style="margin-top:12px">
       <label>Indian state <select id="ck-state"></select></label>
@@ -565,11 +565,11 @@ function drawEvidence(S, T, ty, CT){
 function drawFinds(IN, CT){
   const S = IN.summary, PT = S.partial, L = CT.late_view.filter(r => r.year <= 2025), r25 = L[L.length - 1], pk = L.reduce((m, r) => r.snpp_day > m.snpp_day ? r : m);
   const fall = v => Math.round((1 - v / pk.snpp_day) * 100), cards = [];
+  const b = S.breaks[S.seasons[0]], y = S.years[S.years.length - 1];
+  cards.push(['#check', `${b.length} of ${S.tested[S.seasons[0]]}`, `states tested show the break in ${y}: ${b.join(' and ')}. Run the same test on your own region.`, 'Every Indian state, or FIRMS files for anywhere']);
   if (PT) { const p = IN.rows.find(r => r.state === 'Punjab' && r.season === PT.season && r.year === PT.year);
     if (p) cards.push(['#india', p.aqua_x.toFixed(1) + '×', `This season the later satellite still sees ${p.aqua_x.toFixed(1)} times its usual share of Punjab's fires.`, `1 October to ${new Date(PT.end).toLocaleDateString('en-GB', {day:'numeric', month:'long'})} ${PT.year}, near-real-time data`]); }
   cards.push(['#floor', `${fall(r25.aqua_as_snpp)}%, not ${fall(r25.snpp_day)}%`, `Burning in Punjab and Haryana fell by no more than about ${fall(r25.aqua_as_snpp)}% since ${pk.year}. The count says ${fall(r25.snpp_day)}%.`, `A floor from Aqua's later pass, ${r25.year}`]);
-  const b = S.breaks[S.seasons[0]], y = S.years[S.years.length - 1];
-  cards.push(['#check', `${b.length} of ${S.tested[S.seasons[0]]}`, `states tested show the break in ${y}: ${b.join(' and ')}. Run the same test on your own region.`, 'Every Indian state, or FIRMS files for anywhere']);
   document.getElementById('finds').innerHTML = cards.map(c => `<a href="${c[0]}"><b>${c[1]}</b><span>${c[2]}</span><em>${c[3]}</em></a>`).join('');
 }
 
@@ -605,6 +605,15 @@ function assessRegion(months, m0, m1, end){
   rows.forEach(r => { r.k = r0; });
   return {ok:true, rows, meanFires, nightOK, k:r0};
 }
+function poolStates(DATA, skip){
+  const out = {};
+  Object.entries(DATA.states).forEach(([n, mo]) => { if (skip.includes(n)) return;
+    Object.entries(mo).forEach(([ym, v]) => { const o = out[ym] || (out[ym] = [0, 0, 0, 0, 0, 0, 0]);
+      for (const i of [0, 1, 2, 3, 5]) o[i] += v[i] || 0;
+      o[4] += (v[4] || 0) * (v[0] || 0); o[6] += (v[6] || 0) * (v[5] || 0); }); });
+  Object.values(out).forEach(o => { o[4] = o[0] ? o[4] / o[0] : null; o[6] = o[5] ? o[6] / o[5] : null; });
+  return out;
+}
 function initChecker(DATA){
   const MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const $ = id => document.getElementById(id), selS = $('ck-state'), selA = $('ck-from'), selB = $('ck-to');
@@ -632,15 +641,19 @@ function initChecker(DATA){
     drawScan(A, R, win);
   }
   // ---- the day, scanned by drift: every point is one season's look by Terra or Aqua, in units of the ~13:30 count
-  let MV = null;
+  let MV = null, CONTROL = null;
   function drawScan(A, R, win){
     const pts = []; R.forEach(r => { if (r.tT != null && r.te > 0) pts.push({x:r.tT, y:r.te * A.k / r.sd, year:r.year, sat:'Terra'}); if (r.t != null && r.aq > 0) pts.push({x:r.t, y:r.aq * A.k / r.sd, year:r.year, sat:'Aqua'}); });
     const old = pts.filter(p => p.year <= 2022), rec = pts.filter(p => p.year > 2022);
     const tr = (P, name, color, size, text) => ({type:'scatter', mode:text ? 'markers+text' : 'markers', x:P.map(p => p.x), y:P.map(p => p.y), name, marker:{color, size, line:{color:'#fff', width:1}},
       text:text ? P.map(p => String(p.year)) : undefined, textposition:'top center', textfont:{size:11, color},
       customdata:P.map(p => [p.sat, p.year, hhmm(p.x)]), hovertemplate:'%{customdata[0]}, %{customdata[1]}, at %{customdata[2]}: %{y:.2f}× the 13:30 count<extra></extra>'});
-    Plotly.newPlot('ck-scan', [tr(old, '2012–2022', '#8FA3AD', 8, false), tr(rec, '2023 onward', C.ember, 11, true),
-      {type:'scatter', mode:'markers', x:[13.5], y:[1], name:'Suomi NPP, about 13:30 (the reference)', marker:{color:C.sat, size:13, symbol:'diamond'}, hovertemplate:'Suomi NPP at about 13:30: 1<extra></extra>'}],
+    let ctl = null;
+    if (CONTROL && label !== 'India without Punjab and Haryana') { const Ac = assessRegion(CONTROL, +selA.value, +selB.value, end);
+      if (Ac.ok) { const Q = []; Ac.rows.filter(r => r.year >= 2012).forEach(r => { if (r.tT != null && r.te > 0) Q.push({x:r.tT, y:r.te * Ac.k / r.sd, year:r.year, sat:'Terra'}); if (r.t != null && r.aq > 0) Q.push({x:r.t, y:r.aq * Ac.k / r.sd, year:r.year, sat:'Aqua'}); });
+        ctl = {...tr(Q, 'India without Punjab and Haryana (control)', '#2E8B97', 6, false), marker:{color:'rgba(0,0,0,0)', size:8, line:{color:'#2E8B97', width:1.4}}}; } }
+    Plotly.newPlot('ck-scan', [tr(old, '2012–2022', '#8FA3AD', 8, false), tr(rec, '2023 onward', C.ember, 11, true)].concat(ctl ? [ctl] : []).concat([
+      {type:'scatter', mode:'markers', x:[13.5], y:[1], name:'Suomi NPP, about 13:30 (the reference)', marker:{color:C.sat, size:13, symbol:'diamond'}, hovertemplate:'Suomi NPP at about 13:30: 1<extra></extra>'}]),
       {...BASE, legend:{orientation:'h', y:1.14, x:0}, shapes:[{type:'line', xref:'paper', x0:0, x1:1, y0:1, y1:1, line:{color:C.muted, width:1, dash:'dot'}}],
        xaxis:{...BASE.xaxis, title:{text:'Local time the satellite looked'}, range:[9, 16.6], tickvals:[9,10,11,12,13,14,15,16], ticktext:['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00']},
        yaxis:{...BASE.yaxis, type:'log', tickvals:[0.003,0.01,0.03,0.1,0.3,1,3,10], ticktext:['0.003','0.01','0.03','0.1','0.3','1','3','10'], title:{text:'Fires seen, × the 13:30 count (log scale)'}}}, CFG);
@@ -666,10 +679,12 @@ function initChecker(DATA){
   }
   $('ck-copy').addEventListener('click', () => { const t = $('ck-verdict').textContent + ' ' + $('ck-status').textContent + ' Source: AgniCal timing test on NASA FIRMS MODIS C6.1 and VIIRS S-NPP data.';
     (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => $('ck-copied').textContent = 'Copied.').catch(() => $('ck-copied').textContent = 'Select the headline above to copy it.'); });
-  function load(mo, e, name){ months = mo; end = e; label = name; const [a, b] = peakPair(mo); selA.value = a; selB.value = b; run(); }
+  function load(mo, e, name){ months = mo; end = e; label = name; const [a, b] = /^India/.test(name) || name === 'All India' ? [10, 11] : peakPair(mo); selA.value = a; selB.value = b; run(); }
   [selA, selB].forEach(el => el.addEventListener('change', run));
-  if (DATA) { const names = Object.keys(DATA.states).sort();
-    selS.innerHTML = names.map(n => `<option>${n}</option>`).join(''); selS.value = names.includes('Punjab') ? 'Punjab' : names[0];
+  if (DATA) { const ALL = 'All India', REST = 'India without Punjab and Haryana', NW = ['Punjab', 'Haryana'];
+    DATA.states[ALL] = poolStates(DATA, []); DATA.states[REST] = poolStates(DATA, NW); CONTROL = DATA.states[REST];
+    const names = Object.keys(DATA.states).filter(n => n !== ALL && n !== REST).sort(), order = [ALL, REST].concat(names);
+    selS.innerHTML = order.map(n => `<option>${n}</option>`).join(''); selS.value = ALL;
     selS.addEventListener('change', () => load(DATA.states[selS.value], DATA.end, selS.value));
     load(DATA.states[selS.value], DATA.end, selS.value);
   } else selS.closest('label').hidden = true;
