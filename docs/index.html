@@ -100,7 +100,7 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   </header>
 
   <div class="hero">
-    <h1>We tested all of India. Only Punjab and Haryana's farm fires slipped out of the satellites' view.</h1>
+    <h1>We tested every Indian state with enough fires. Only in Punjab and Haryana did farm fires slip out of the satellites' view.</h1>
     <p class="dek" id="dek">NASA's fire satellites pass over India at fixed hours, and those hours have drifted. AgniCal joins their 23-year record into one scale and runs one timing test on every Indian state, against the same satellites' view across the border and in the states that show no break. The shift is concentrated in the northwest, where Punjab and Haryana burn later in the day than the satellites look, and it puts a floor under what the count now misses.</p>
     <p class="dek" style="font-size:1rem;margin-top:10px"><b style="font-family:var(--display)">What is new here.</b> Others showed with all-day geostationary satellites that burning now peaks in the late afternoon. AgniCal confirms it from NASA's polar data alone, separates it from the drift of the satellites' own orbits, and builds it into the 2003–2025 record. It adds things of its own: the drifting-satellite scanner (Terra and Aqua are the same sensor sliding in opposite directions, so each season samples two extra hours of the fire day); the result for the season now under way, in every Indian state; a blind-spot index for every district; and a checker that runs the same test on FIRMS files for any region on Earth.</p>
 
@@ -223,6 +223,12 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
     </div>
     <div class="fig"><div id="ch-floor" style="height:380px"></div></div>
     <p class="caption" id="floor-caption"></p>
+    <div class="prose" style="margin-top:36px">
+      <h3 style="font-size:1.5rem">Where a fixed MODIS-to-VIIRS conversion can be trusted</h3>
+      <p>Harmonizing the two sensors means converting an Aqua count into what Suomi NPP would have counted. We fit that ratio for each state and season on 2012–2022, before the drift, then apply it to 2023–2025 and compare with what Suomi NPP actually counted. Where the error stays small, the fixed conversion is safe to use. Where it grows, the conversion has stopped being valid and the region should be flagged instead of converted.</p>
+    </div>
+    <div id="tbl-harm"></div>
+    <p class="caption" id="harm-note"></p>
   </div>
 </section>
 
@@ -381,6 +387,7 @@ Promise.all(['summary.json','timing.json','record.json','calendar.json','distric
     drawFloor(S, CT);
     Promise.all([j('india.json'), j('india_states.json')]).then(([IN, IG]) => initIndia(IN, IG)).catch(() => {});
     j('checker_states.json').then(initChecker).catch(() => initChecker(null));
+    j('harmonize_india.json').then(drawHarm).catch(() => {});
     Promise.all([j('india.json'), Promise.resolve(CT)]).then(([IN, CT]) => drawFinds(IN, CT)).catch(() => {});
     drawPeak(S, T, ty);
     initCalendar(CAL, R, ty);
@@ -562,6 +569,15 @@ function drawEvidence(S, T, ty, CT){
 }
 
 /* ---------- three findings ---------- */
+function drawHarm(H){
+  const R = H.rows.filter(r => r.season.startsWith('Post-monsoon')), yrs = [...new Set(R.map(r => r.year))].sort(), grp = ['Punjab and Haryana', 'Other states'];
+  const pct = v => (v > 0 ? '+' : '') + v.toFixed(0) + '%';
+  let h = '<table><thead><tr><th>Post-monsoon season (Oct–Nov)</th>' + yrs.map(y => `<th class="num">${y}</th>`).join('') + '</tr></thead><tbody>';
+  grp.forEach(g => { h += `<tr><td>${g}: conversion error</td>` + yrs.map(y => { const r = R.find(q => q.group === g && q.year === y); return `<td class="num">${r ? pct(r.error_pct) : '–'}</td>`; }).join('') + '</tr>'; });
+  document.getElementById('tbl-harm').innerHTML = h + '</tbody></table>';
+  const o = H.hour_aware_outside_nw;
+  document.getElementById('harm-note').textContent = `Error is how far the Aqua count, converted with the 2012–22 ratio, lands from the Suomi NPP count, summed over each group's states. Outside Punjab and Haryana the conversion is off by a few to about 30 percent; in Punjab and Haryana it is off by 35 to 260 percent, because the fires moved out of Suomi NPP's view. We also tried adjusting the ratio for Aqua's viewing hour. It did not help (${pct(o.stationary_error_pct)} without, ${pct(o.hour_aware_error_pct)} with, outside the northwest, all seasons), so it is not used. Use the converted record where this test passes, and treat it as a lower bound where it does not.`;
+}
 function drawFinds(IN, CT){
   const S = IN.summary, PT = S.partial, L = CT.late_view.filter(r => r.year <= 2025), r25 = L[L.length - 1], pk = L.reduce((m, r) => r.snpp_day > m.snpp_day ? r : m);
   const fall = v => Math.round((1 - v / pk.snpp_day) * 100), cards = [];

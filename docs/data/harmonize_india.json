@@ -1,0 +1,190 @@
+{
+ "rows": [
+  {
+   "season": "Post-monsoon (Oct-Nov)",
+   "group": "Other states",
+   "year": 2023,
+   "n_states": 11,
+   "snpp_observed": 25437,
+   "predicted_from_aqua": 26320,
+   "error_pct": 3.5,
+   "median_state_error_pct": 13.1
+  },
+  {
+   "season": "Post-monsoon (Oct-Nov)",
+   "group": "Other states",
+   "year": 2024,
+   "n_states": 11,
+   "snpp_observed": 32690,
+   "predicted_from_aqua": 42190,
+   "error_pct": 29.1,
+   "median_state_error_pct": 37.4
+  },
+  {
+   "season": "Post-monsoon (Oct-Nov)",
+   "group": "Other states",
+   "year": 2025,
+   "n_states": 11,
+   "snpp_observed": 34205,
+   "predicted_from_aqua": 43010,
+   "error_pct": 25.7,
+   "median_state_error_pct": 23.7
+  },
+  {
+   "season": "Post-monsoon (Oct-Nov)",
+   "group": "Punjab and Haryana",
+   "year": 2023,
+   "n_states": 2,
+   "snpp_observed": 32200,
+   "predicted_from_aqua": 43342,
+   "error_pct": 34.6,
+   "median_state_error_pct": 23.9
+  },
+  {
+   "season": "Post-monsoon (Oct-Nov)",
+   "group": "Punjab and Haryana",
+   "year": 2024,
+   "n_states": 2,
+   "snpp_observed": 9659,
+   "predicted_from_aqua": 20107,
+   "error_pct": 108.2,
+   "median_state_error_pct": 68.6
+  },
+  {
+   "season": "Post-monsoon (Oct-Nov)",
+   "group": "Punjab and Haryana",
+   "year": 2025,
+   "n_states": 2,
+   "snpp_observed": 4541,
+   "predicted_from_aqua": 16399,
+   "error_pct": 261.1,
+   "median_state_error_pct": 203.5
+  },
+  {
+   "season": "Pre-monsoon (Mar-May)",
+   "group": "Other states",
+   "year": 2023,
+   "n_states": 25,
+   "snpp_observed": 138713,
+   "predicted_from_aqua": 123361,
+   "error_pct": -11.1,
+   "median_state_error_pct": 12.1
+  },
+  {
+   "season": "Pre-monsoon (Mar-May)",
+   "group": "Other states",
+   "year": 2024,
+   "n_states": 25,
+   "snpp_observed": 151560,
+   "predicted_from_aqua": 131356,
+   "error_pct": -13.3,
+   "median_state_error_pct": 17.1
+  },
+  {
+   "season": "Pre-monsoon (Mar-May)",
+   "group": "Other states",
+   "year": 2025,
+   "n_states": 25,
+   "snpp_observed": 175932,
+   "predicted_from_aqua": 208681,
+   "error_pct": 18.6,
+   "median_state_error_pct": 21.4
+  },
+  {
+   "season": "Pre-monsoon (Mar-May)",
+   "group": "Punjab and Haryana",
+   "year": 2023,
+   "n_states": 2,
+   "snpp_observed": 13496,
+   "predicted_from_aqua": 8668,
+   "error_pct": -35.8,
+   "median_state_error_pct": 41.8
+  },
+  {
+   "season": "Pre-monsoon (Mar-May)",
+   "group": "Punjab and Haryana",
+   "year": 2024,
+   "n_states": 2,
+   "snpp_observed": 15913,
+   "predicted_from_aqua": 16002,
+   "error_pct": 0.6,
+   "median_state_error_pct": 1.8
+  },
+  {
+   "season": "Pre-monsoon (Mar-May)",
+   "group": "Punjab and Haryana",
+   "year": 2025,
+   "n_states": 2,
+   "snpp_observed": 16614,
+   "predicted_from_aqua": 13608,
+   "error_pct": -18.1,
+   "median_state_error_pct": 16.2
+  },
+  {
+   "season": "Winter (Dec-Feb)",
+   "group": "Other states",
+   "year": 2023,
+   "n_states": 22,
+   "snpp_observed": 55245,
+   "predicted_from_aqua": 57163,
+   "error_pct": 3.5,
+   "median_state_error_pct": 8.6
+  },
+  {
+   "season": "Winter (Dec-Feb)",
+   "group": "Other states",
+   "year": 2024,
+   "n_states": 22,
+   "snpp_observed": 81884,
+   "predicted_from_aqua": 89956,
+   "error_pct": 9.9,
+   "median_state_error_pct": 15.0
+  },
+  {
+   "season": "Winter (Dec-Feb)",
+   "group": "Other states",
+   "year": 2025,
+   "n_states": 22,
+   "snpp_observed": 96768,
+   "predicted_from_aqua": 103353,
+   "error_pct": 6.8,
+   "median_state_error_pct": 15.5
+  },
+  {
+   "season": "Winter (Dec-Feb)",
+   "group": "Punjab and Haryana",
+   "year": 2023,
+   "n_states": 2,
+   "snpp_observed": 1127,
+   "predicted_from_aqua": 906,
+   "error_pct": -19.6,
+   "median_state_error_pct": 19.7
+  },
+  {
+   "season": "Winter (Dec-Feb)",
+   "group": "Punjab and Haryana",
+   "year": 2024,
+   "n_states": 2,
+   "snpp_observed": 1493,
+   "predicted_from_aqua": 1525,
+   "error_pct": 2.2,
+   "median_state_error_pct": 15.0
+  },
+  {
+   "season": "Winter (Dec-Feb)",
+   "group": "Punjab and Haryana",
+   "year": 2025,
+   "n_states": 2,
+   "snpp_observed": 832,
+   "predicted_from_aqua": 772,
+   "error_pct": -7.2,
+   "median_state_error_pct": 25.2
+  }
+ ],
+ "hour_aware_outside_nw": {
+  "slope_per_hour": 0.037,
+  "stationary_error_pct": 7.5,
+  "hour_aware_error_pct": 10.6,
+  "note": "The hour adjustment did not reduce the error, so it is not used."
+ }
+}
