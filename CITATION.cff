@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "AgniCal: MODIS/VIIRS harmonization and overpass-timing diagnostics for crop fires in India"
+authors:
+  - family-names: "K"
+    given-names: "Prithika"
+date-released: 2026-11-15
+repository-code: "https://github.com/Prithika-97/agnical"
+url: "https://prithika-97.github.io/agnical/"
+license: MIT
+keywords: [active fire, MODIS, VIIRS, stubble burning, harmonization, NASA Space Apps]

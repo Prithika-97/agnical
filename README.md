@@ -1,34 +1,56 @@
 # AgniCal
 
-**We checked every Indian state. Only in Punjab and Haryana did farm burning slip out of the satellites' sight.**
+**Punjab and Haryana's farm fires moved later in the day, and NASA's fire counts didn't follow.**
 
-NASA Space Apps Challenge 2026, challenge: *Harmonization of MODIS and VIIRS Hot Spots*
+[![Live site](https://img.shields.io/badge/live%20site-prithika--97.github.io%2Fagnical-E8590C)](https://prithika-97.github.io/agnical/)
+![Python](https://img.shields.io/badge/python-3.10%2B-3776AB)
+![Tests](https://img.shields.io/badge/tests-19%20passing-2E8B57)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
+![NASA Space Apps 2026](https://img.shields.io/badge/NASA%20Space%20Apps-2026-0B3D91)
 
-Crop-residue fires in Punjab and Haryana feed north India's winter smog, and claims of
-progress rest on one number: how many fires NASA's polar satellites count. Those satellites
-(MODIS on Terra and Aqua; VIIRS on Suomi NPP, NOAA-20 and NOAA-21) pass at the same hours every day.
+NASA Space Apps Challenge 2026, challenge: *Harmonization of MODIS and VIIRS Hot Spots*.
+**[Open the live site](https://prithika-97.github.io/agnical/)**
 
-Farmers burning later in the day is **not our discovery**. Jethva (2026, *Remote Sensing*),
-Singh et al. (ISRO SAC, 2025, *Current Science*) and iFOREST (2025) showed it with satellites
-that watch all day, and with burnt-area maps. We asked a different question: what does it mean for
-the combined MODIS-VIIRS record everyone uses, and can NASA's polar data show it on its own?
-This is what AgniCal adds:
+<p align="center"><img src="assets/scanner.png" alt="Fires seen by Terra and Aqua at the hour each looked, Punjab. 2023 onward leaves the old curve; the control (all other states) does not." width="860"></p>
 
-1. **One scale for 2003-2025**, with uncertainty. MODIS is converted to VIIRS-equivalent
-   counts, so the 2012 switch no longer looks like a jump in burning.
-2. **A record that knows when it stops being comparable.** Two indicators that need no model flag
-   the seasons in which burning moved out of the satellites' viewing hours.
-3. **A scanner built from the drift.** Terra and Aqua carry the same sensor and are sliding in opposite
-   directions (about 10:00 and 15:15 local time now), so each season gives two extra looks at the fire day.
-   The page has a "Move the satellite" slider, and the scanner and region checker open on All India. You can switch to any
-   state, or to the pool of every state outside Punjab and Haryana, which stays on the old curve while Punjab leaves it.
-   One caution: Terra and Aqua differ a little in sensitivity and scene conditions, and the slider fills in between real
-   looks, so it is not a measurement away from them.
-4. **A control for the satellites themselves.** Aqua and Terra both drifted in the same years, so every
-   test is repeated on the farm fires just across the border in Pakistani Punjab, which the same satellites see on the same passes.
-5. **A floor under the real count.** Aqua's later pass, in Suomi NPP units: a minimum for what the count now misses.
+*Each dot is one season seen by Terra (morning) or Aqua (afternoon), as a multiple of the early-afternoon count. Teal rings are every state outside Punjab and Haryana: they stay on the old curve while Punjab leaves it.*
 
-## What the data show (all computed by `pipeline.py`; see `reports/RESULTS.md`)
+## The finding in 30 seconds
+
+- NASA's polar satellites pass India at fixed hours. Terra and Aqua's passes have drifted, and in
+  Punjab and Haryana the burning has moved to the late afternoon.
+- Of the 13 Indian states with enough fires to test, **only Punjab and Haryana** show the shift.
+  The same satellites see no such change across the border in Pakistan or in the other states, so
+  it is not an orbit-drift artefact.
+- Suomi NPP's count says burning fell 95% from its 2016 peak. Aqua's later pass puts a floor
+  under that: the fall is **no more than about 83%**.
+- AgniCal turns this into a tested record (2003-2025, one scale), a region checker anyone can run on
+  their own FIRMS files, a district blind-spot index, and a conversion test that says where a fixed
+  MODIS-to-VIIRS mapping can still be trusted.
+
+## What is and isn't new
+
+Farmers burning later is **not our discovery**. Jethva (2026, *Remote Sensing*), Singh et al. (ISRO SAC,
+2025) and iFOREST (2025) showed it with satellites that watch all day and with burnt-area maps. We ask what it means for the
+combined MODIS-VIIRS record that everyone uses, and whether NASA's polar data can show it on their own.
+
+| Added here | Where |
+|---|---|
+| One MODIS-to-VIIRS scale for 2003-2025, with uncertainty | `agnical/harmonize.py` |
+| Two indicators that flag seasons where the count stops being comparable | `agnical/diurnal.py` |
+| Controls: Pakistani Punjab strip, all unflagged Indian states, near-nadir, VIIRS-only | `agnical/controls.py` |
+| The same test on every Indian state and season, including the season under way | `agnical/national.py` |
+| The drifting-satellite scanner: Terra and Aqua as two extra looks at the fire day | `docs/index.html` |
+| A floor under the real count, cross-checked against a published geostationary estimate | `agnical/controls.py` |
+| Where a fixed Aqua-to-VIIRS conversion holds across India | `scripts/harmonize_india_test.py` |
+| A checker that runs the test on any FIRMS files, in the browser | `docs/index.html` |
+
+<p align="center"><img src="assets/india_map.png" alt="Map of Indian states: Punjab shows a timing break, Haryana and Uttar Pradesh one indicator, most others none." width="520"></p>
+
+<details>
+<summary><b>Detailed results</b> (everything below is computed by the pipeline)</summary>
+
+### Punjab and Haryana against the border strip (`pipeline.py`, `reports/RESULTS.md`)
 
 | | Punjab + Haryana, India | Punjab, Pakistan (border strip) |
 |---|---|---|
@@ -83,7 +105,7 @@ the states that show no flag, which are seen by the same drifting satellites.
 - **Check your own region**: the website runs the same test in the browser on FIRMS archive
   CSVs for any area on Earth, or on any Indian state and any months.
 
-### Harmonization, validated honestly (leave one season out, 2012-2022)
+### Harmonization (leave one season out, 2012-2022)
 
 | Method | Cell deviance | Paddy total error | Wheat total error | Paddy peak period exact |
 |---|---|---|---|---|
@@ -98,6 +120,9 @@ cell-level maps, the timing of the seasonal peak, and the wheat season (p = 0.03
 Suomi NPP stopped delivering data on 2 Nov 2026. NOAA-21 counts convert to Suomi NPP units by
 a factor of 1.03 (yearly range 1.01-1.12, 2023-2025).
 
+
+</details>
+
 ## Run it
 
 ```bash
@@ -111,6 +136,19 @@ pytest -q
 
 The website in `docs/` is static (HTML, JSON, Plotly.js) and is served as-is by GitHub Pages.
 The harmonized record is one file: `docs/data/agnical_record.csv`.
+
+## Repository layout
+
+```
+agnical/            analysis modules (ingest, grid, harmonize, diurnal, controls, national, export)
+pipeline.py         Punjab + Haryana run: harmonized record, timing analysis, site data
+national_pipeline.py  all-India run
+scripts/            one-off helpers (reduce_snpp.py, harmonize_india_test.py)
+docs/               the website (static; served by GitHub Pages) and docs/data/*.json, agnical_record.csv
+reports/            RESULTS.md, written from the computed metrics
+tests/              pytest suite (19 tests)
+assets/             images used in this README
+```
 
 ## Method
 
@@ -145,6 +183,14 @@ by `regions.build_boundary_file` and `controls.build_region_file`.
 - Jethva, H. (2026). Timing the Flames: Geostationary Satellite Detection of Diurnally Shifting Stubble Burning in Northwestern India. *Remote Sensing* 18(10), 1506. https://doi.org/10.3390/rs18101506
 - Singh, N., Pradhan, R., Shukla, B. P., Pandya, M. R. (Space Applications Centre, ISRO), communication in *Current Science*, 2025, as reported by The Tribune, 10 Dec 2025.
 - iFOREST (2025). Stubble Burning Status Report 2025, as reported by The Tribune, 9 Dec 2025.
+
+## Cite
+
+If you use the record or the test, please cite this repository (see `CITATION.cff`).
+
+## License
+
+MIT. NASA FIRMS data and the boundary files keep their own licenses (see above).
 
 ## Use of AI
 
