@@ -30,8 +30,8 @@ NASA Space Apps Challenge 2026, challenge: *Harmonization of MODIS and VIIRS Hot
 
 ## What is and isn't new
 
-Farmers burning later is **not our discovery**. Jethva (2026, *Remote Sensing*), Singh et al. (ISRO SAC,
-2025) and iFOREST (2025) showed it with satellites that watch all day and with burnt-area maps. We ask what it means for the
+Farmers burning later is **not my discovery**. Jethva (2026, *Remote Sensing*), Singh et al. (ISRO SAC,
+2025) and iFOREST (2025) showed it with satellites that watch all day and with burnt-area maps. I ask what it means for the
 combined MODIS-VIIRS record that everyone uses, and whether NASA's polar data can show it on their own.
 
 | Added here | Where |
@@ -65,8 +65,8 @@ combined MODIS-VIIRS record that everyone uses, and whether NASA's polar data ca
 - **2023 is the weakest year**: against the narrow Pakistan strip, Aqua's ratio rose as much on
   both sides (0.92, 0.68-1.20), so only the night share separates them; 2024 and 2025 are
   confirmed. Against the larger all-India control (below) 2023 is distinguishable on both, so
-  we read it as the first, smaller step of the shift.
-- **A signal we threw out**: the morning (Terra) to afternoon (Aqua) ratio collapsed on both
+  I read it as the first, smaller step of the shift.
+- **A signal I threw out**: the morning (Terra) to afternoon (Aqua) ratio collapsed on both
   sides of the border, so it reflects orbit drift, not burning.
 - **A test that found nothing**: within VIIRS's own window (two looks ~100 min apart on some
   days) the rise per hour stayed inside its 2012-2022 range. What still burns at midday keeps
@@ -169,7 +169,7 @@ by `regions.build_boundary_file` and `controls.build_region_file`.
 - In the all-India run, Suomi NPP detections are pre-counted per 0.1 degree cell (`scripts/reduce_snpp.py`, to move the file over a slow connection) and assigned to the state of the cell centre, so a small share of fires near state borders is assigned to the neighbour. View angle and the VIIRS-only test are therefore not repeated nationally.
 
 - Active-fire detections are snapshots, not burned area; cloud, haze and short fires between passes are missed.
-- Polar satellites cannot see burning after about 15:15. The floor is a lower bound, not an estimate of the total. We did not obtain geostationary fire data during the hackathon; the 16:00-18:00 peak is quoted from published studies.
+- Polar satellites cannot see burning after about 15:15. The floor is a lower bound, not an estimate of the total. I did not obtain geostationary fire data during the hackathon; the 16:00-18:00 peak is quoted from published studies.
 - The comparison region is a narrow strip with about a tenth of the study area's fires. It controls for the satellites, not for weather or crop-calendar differences.
 - Both indicators use Suomi NPP's daytime count, so they are not fully independent.
 - The timing test covers India only. It has not been run on other countries.
