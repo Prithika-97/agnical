@@ -38,6 +38,13 @@ section{padding:72px 0;border-top:1px solid var(--rule)}
 .fig.flat{background:transparent;padding:0}
 .caption{font-size:.95rem;color:var(--muted);max-width:72ch;margin:10px 0 0}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.finds{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:26px 0 6px}
+.finds a{display:block;background:var(--panel);border-radius:16px;padding:18px 20px 16px;text-decoration:none;color:var(--ink);border:1px solid transparent}
+.finds a:hover,.finds a:focus-visible{border-color:var(--ink)}
+.finds b{display:block;font-family:var(--display);font-size:2rem;line-height:1.05;letter-spacing:-.02em}
+.finds span{display:block;font-family:var(--display);font-size:.95rem;margin-top:6px;line-height:1.35}
+.finds em{display:block;font-style:normal;font-family:var(--display);font-size:.82rem;color:var(--muted);margin-top:8px}
+@media (max-width:860px){.finds{grid-template-columns:1fr}}
 .users{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 40px;margin-top:20px}
 .users h3{margin-top:18px}
 .users p{font-size:1rem;margin:0}
@@ -89,15 +96,15 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
 <div class="wrap">
   <header class="site">
     <span>AgniCal</span>
-    <nav aria-label="Sections">
-      <a href="#counts">The record</a><a href="#evidence">The test</a><a href="#india">All of India</a><a href="#floor">The floor</a><a href="#calendar">Calendar</a><a href="#check">Check your region</a><a href="#users">Who it is for</a><a href="#method">Method</a>
-    </nav>
+    <nav aria-label="Sections"><a href="#india">This season</a><a href="#check">Check your region</a><a href="#evidence">The proof</a><a href="#floor">The floor</a><a href="#districts">Districts</a><a href="#counts">The record</a><a href="#method">Method</a></nav>
   </header>
 
   <div class="hero">
     <h1>Punjab and Haryana's farm fires moved later in the day. The satellites that count them didn't.</h1>
     <p class="dek" id="dek">NASA's fire satellites pass over Punjab and Haryana at fixed hours. AgniCal joins their 23-year record into one scale, tests the shift against the same satellites' view across the border and in every state of India, and puts a floor under what the count now misses.</p>
     <p class="dek" style="font-size:1rem;margin-top:10px"><b style="font-family:var(--display)">What is new here.</b> Others showed with all-day geostationary satellites that burning now peaks in the late afternoon. AgniCal confirms it from NASA's polar data alone, separates it from the drift of the satellites' own orbits, and builds it into the 2003–2025 record. It adds three things of its own: the result for the season now under way, in every Indian state; a blind-spot index for every district; and a checker that runs the same test on FIRMS files for any region on Earth.</p>
+
+    <div class="finds" id="finds"></div>
 
     <div class="strip-wrap" role="group" aria-labelledby="strip-title">
       <div class="strip-top">
@@ -122,22 +129,47 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   </div>
 </div>
 
-<section id="counts">
+<section id="india" hidden>
   <div class="wrap">
     <div class="prose">
-      <h2>What the count says</h2>
-      <p id="counts-lede"></p>
-      <p>Before 2012 only MODIS existed. Its pixels are about 1 km wide, so it sees fewer fires than VIIRS (375 m). Joining the two raw records makes 2012 look like a jump in burning. AgniCal learns how MODIS observations translate into VIIRS-equivalent counts during the years both flew, and rebuilds 2003–2011 on the VIIRS scale.</p>
+      <h2>This season, and every state of India</h2>
+      <p id="india-lede"></p>
     </div>
-    <div class="fig"><div id="ch-record" style="height:420px"></div></div>
-    <p class="caption" id="record-caption"></p>
+    <div class="controls" style="margin-top:12px">
+      <span class="seg" role="group" aria-label="Season" id="india-seasons"></span>
+      <span class="seg" role="group" aria-label="Year" id="india-years"></span>
+    </div>
+    <div class="fig"><div id="ch-india"></div></div>
+    <p class="caption" id="india-caption"></p>
+    <div id="tbl-india"></div>
+    <p class="small" id="india-note"></p>
+  </div>
+</section>
+
+<section id="check">
+  <div class="wrap">
+    <div class="prose">
+      <h2>Check your own region</h2>
+      <p>Aqua's drift affects every MODIS fire record on Earth. This tool runs the timing test on any place: pick an Indian state, or drop in NASA FIRMS archive files (CSV) for MODIS and VIIRS Suomi NPP for your own area. Files are read in your browser and are not sent anywhere.</p>
+    </div>
+    <div class="controls" style="margin-top:12px">
+      <label>Indian state <select id="ck-state"></select></label>
+      <label>or your FIRMS files <input type="file" id="ck-files" accept=".csv,text/csv" multiple></label>
+      <label>Season from <select id="ck-from"></select></label>
+      <label>to <select id="ck-to"></select></label>
+    </div>
+    <p class="small" id="ck-status" aria-live="polite" style="margin:10px 0 0"></p>
+    <div class="fig" style="margin-top:14px"><h3 id="ck-verdict" style="font-size:1.25rem;line-height:1.3"></h3><div id="ck-chart" style="height:300px;margin-top:8px"></div></div>
+    <div id="ck-table"></div>
+    <p style="margin:12px 0 0"><button type="button" id="ck-copy" style="font:inherit;font-family:var(--display);padding:8px 14px;border-radius:10px;border:1px solid var(--rule);background:var(--panel);cursor:pointer">Copy this result</button> <span class="small" id="ck-copied" aria-live="polite"></span></p>
+    <p class="small">How to get files: at firms.modaps.eosdis.nasa.gov/download, request "MODIS C6.1" and "SUOMI VIIRS C2" as CSV for your area, 2012 onward, and unzip them. The test needs at least eight seasons between 2012 and 2022 with 300 or more Suomi NPP daytime fires each. The same two indicators and thresholds are used as everywhere on this page.</p>
   </div>
 </section>
 
 <section id="evidence">
   <div class="wrap">
     <div class="prose">
-      <h2>Is the shift real, or did the satellites change?</h2>
+      <h2>The proof: is the shift real, or did the satellites change?</h2>
       <p>That farmers now burn later is not our discovery. Scientists at ISRO and NASA showed it in 2025 and 2026 with geostationary satellites, which watch all day. AgniCal asks what follows for the record everyone uses: can the polar satellites detect the change on their own, is it a real change in burning, and how much does the count now miss?</p>
       <p>There is a reason to doubt it. Aqua's orbit drifted later and Terra's drifted earlier in the same years, and a satellite that looks at a different hour sees a different number of fires even if nothing on the ground changes. So we ran every test twice: once on Punjab and Haryana, and once on the farm fires just across the border in Pakistani Punjab, which the same satellites see on the same passes.</p>
     </div>
@@ -168,23 +200,6 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   </div>
 </section>
 
-<section id="india" hidden>
-  <div class="wrap">
-    <div class="prose">
-      <h2>The same test, for every state of India</h2>
-      <p id="india-lede"></p>
-    </div>
-    <div class="controls" style="margin-top:12px">
-      <span class="seg" role="group" aria-label="Season" id="india-seasons"></span>
-      <span class="seg" role="group" aria-label="Year" id="india-years"></span>
-    </div>
-    <div class="fig"><div id="ch-india"></div></div>
-    <p class="caption" id="india-caption"></p>
-    <div id="tbl-india"></div>
-    <p class="small" id="india-note"></p>
-  </div>
-</section>
-
 <section id="floor">
   <div class="wrap">
     <div class="prose">
@@ -193,6 +208,36 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
     </div>
     <div class="fig"><div id="ch-floor" style="height:380px"></div></div>
     <p class="caption" id="floor-caption"></p>
+  </div>
+</section>
+
+<section id="districts">
+  <div class="wrap">
+    <div class="prose">
+      <h2>District by district</h2>
+      <p>The fall in daytime counts is not even across districts, and neither is the blind spot. The third view shows where a district's falling count says least about its burning, which matters because districts are judged on these counts.</p>
+    </div>
+    <div class="controls" style="margin-top:12px">
+      <span class="seg" role="group" aria-label="Map shows">
+        <button type="button" data-metric="change" aria-pressed="true">Change in paddy-season count</button>
+        <button type="button" data-metric="night" aria-pressed="false">Share of fires seen at night</button>
+        <button type="button" data-metric="blind" aria-pressed="false">Blind-spot index</button>
+      </span>
+    </div>
+    <div class="fig"><div id="ch-map"></div></div>
+    <p class="caption" id="map-caption"></p>
+  </div>
+</section>
+
+<section id="counts">
+  <div class="wrap">
+    <div class="prose">
+      <h2>What the count says</h2>
+      <p id="counts-lede"></p>
+      <p>Before 2012 only MODIS existed. Its pixels are about 1 km wide, so it sees fewer fires than VIIRS (375 m). Joining the two raw records makes 2012 look like a jump in burning. AgniCal learns how MODIS observations translate into VIIRS-equivalent counts during the years both flew, and rebuilds 2003–2011 on the VIIRS scale.</p>
+    </div>
+    <div class="fig"><div id="ch-record" style="height:420px"></div></div>
+    <p class="caption" id="record-caption"></p>
   </div>
 </section>
 
@@ -219,24 +264,6 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   </div>
 </section>
 
-<section id="districts">
-  <div class="wrap">
-    <div class="prose">
-      <h2>District by district</h2>
-      <p>The fall in daytime counts is not even across districts, and neither is the blind spot. The third view shows where a district's falling count says least about its burning, which matters because districts are judged on these counts.</p>
-    </div>
-    <div class="controls" style="margin-top:12px">
-      <span class="seg" role="group" aria-label="Map shows">
-        <button type="button" data-metric="change" aria-pressed="true">Change in paddy-season count</button>
-        <button type="button" data-metric="night" aria-pressed="false">Share of fires seen at night</button>
-        <button type="button" data-metric="blind" aria-pressed="false">Blind-spot index</button>
-      </span>
-    </div>
-    <div class="fig"><div id="ch-map"></div></div>
-    <p class="caption" id="map-caption"></p>
-  </div>
-</section>
-
 <section id="live">
   <div class="wrap">
     <div class="prose">
@@ -245,25 +272,6 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
     </div>
     <div class="fig"><div id="ch-live" style="height:380px"></div></div>
     <p class="caption" id="live-caption"></p>
-  </div>
-</section>
-
-<section id="check">
-  <div class="wrap">
-    <div class="prose">
-      <h2>Check your own region</h2>
-      <p>Aqua's drift affects every MODIS fire record on Earth. This tool runs the timing test on any place: pick an Indian state, or drop in NASA FIRMS archive files (CSV) for MODIS and VIIRS Suomi NPP for your own area. Files are read in your browser and are not sent anywhere.</p>
-    </div>
-    <div class="controls" style="margin-top:12px">
-      <label>Indian state <select id="ck-state"></select></label>
-      <label>or your FIRMS files <input type="file" id="ck-files" accept=".csv,text/csv" multiple></label>
-      <label>Season from <select id="ck-from"></select></label>
-      <label>to <select id="ck-to"></select></label>
-    </div>
-    <p class="small" id="ck-status" aria-live="polite" style="margin:10px 0 0"></p>
-    <div class="fig" style="margin-top:14px"><h3 id="ck-verdict" style="font-size:1.25rem;line-height:1.3"></h3><div id="ck-chart" style="height:300px;margin-top:8px"></div></div>
-    <div id="ck-table"></div>
-    <p class="small">How to get files: at firms.modaps.eosdis.nasa.gov/download, request "MODIS C6.1" and "SUOMI VIIRS C2" as CSV for your area, 2012 onward, and unzip them. The test needs at least eight seasons between 2012 and 2022 with 300 or more Suomi NPP daytime fires each. The same two indicators and thresholds are used as everywhere on this page.</p>
   </div>
 </section>
 
@@ -358,6 +366,7 @@ Promise.all(['summary.json','timing.json','record.json','calendar.json','distric
     drawFloor(S, CT);
     Promise.all([j('india.json'), j('india_states.json')]).then(([IN, IG]) => initIndia(IN, IG)).catch(() => {});
     j('checker_states.json').then(initChecker).catch(() => initChecker(null));
+    Promise.all([j('india.json'), Promise.resolve(CT)]).then(([IN, CT]) => drawFinds(IN, CT)).catch(() => {});
     drawPeak(S, T, ty);
     initCalendar(CAL, R, ty);
     initMap(GEO);
@@ -492,7 +501,7 @@ function drawRecord(S, R, ty){
   document.getElementById('counts-lede').textContent =
     `Suomi NPP counted ${fmt(k[py])} paddy-season fires in Punjab and Haryana in ${py}, and ${fmt(k[2025])} in 2025: a ${Math.abs(S.snpp_drop_peak_to_2025_pct)}% fall. Read at face value, paddy burning has almost stopped. But the count only shows what a satellite sees at about 13:30.`;
   document.getElementById('record-caption').textContent =
-    `Error bars on rebuilt seasons are the 10th–90th percentile of the model's errors when a whole season was left out. Hatched seasons (${S.timing_break_years.join(', ')}) are counted correctly but flagged as timing breaks: the count is not comparable with the seasons before. ${S.timing_confirmed_years.join(' and ')} are also confirmed against the comparison region across the border; 2023 is confirmed only against the larger all-India comparison below.`;
+    `Error bars on rebuilt seasons are the 10th–90th percentile of the model's errors when a whole season was left out. Hatched seasons (${S.timing_break_years.join(', ')}) are counted correctly but flagged as timing breaks: the count is not comparable with the seasons before. ${S.timing_confirmed_years.join(' and ')} are also confirmed against the comparison region across the border; 2023 is confirmed only against the larger all-India comparison.`;
 }
 
 /* ---------- evidence with comparison region ---------- */
@@ -535,6 +544,18 @@ function drawEvidence(S, T, ty, CT){
     const base = rows.filter(r => r.year <= 2022).reduce((s, r) => s + r.snpp_day, 0) / rows.filter(r => r.year <= 2022).length;
     t += `<tr><td>${n}</td><td class="num">${fmt(g(2025).snpp_day)}</td><td class="num">${pct((g(2025).snpp_day / base - 1) * 100)}</td><td>${lab(g(2023))}</td><td>${lab(g(2024))}</td><td>${lab(g(2025))}</td></tr>`; });
   document.getElementById('tbl-regions').innerHTML = t + '</tbody></table><p class="small">Regions with under about 1,000 fires a season have only a handful of night detections, so a single flag there can be chance. Rajasthan\'s districts in the box border Punjab and Haryana.</p>';
+}
+
+/* ---------- three findings ---------- */
+function drawFinds(IN, CT){
+  const S = IN.summary, PT = S.partial, L = CT.late_view.filter(r => r.year <= 2025), r25 = L[L.length - 1], pk = L.reduce((m, r) => r.snpp_day > m.snpp_day ? r : m);
+  const fall = v => Math.round((1 - v / pk.snpp_day) * 100), cards = [];
+  if (PT) { const p = IN.rows.find(r => r.state === 'Punjab' && r.season === PT.season && r.year === PT.year);
+    if (p) cards.push(['#india', p.aqua_x.toFixed(1) + '×', `This season the later satellite still sees ${p.aqua_x.toFixed(1)} times its usual share of Punjab's fires.`, `1 October to ${new Date(PT.end).toLocaleDateString('en-GB', {day:'numeric', month:'long'})} ${PT.year}, near-real-time data`]); }
+  cards.push(['#floor', `${fall(r25.aqua_as_snpp)}%, not ${fall(r25.snpp_day)}%`, `Burning in Punjab and Haryana fell by no more than about ${fall(r25.aqua_as_snpp)}% since ${pk.year}. The count says ${fall(r25.snpp_day)}%.`, `A floor from Aqua's later pass, ${r25.year}`]);
+  const b = S.breaks[S.seasons[0]], y = S.years[S.years.length - 1];
+  cards.push(['#check', `${b.length} of ${S.tested[S.seasons[0]]}`, `states tested show the break in ${y}: ${b.join(' and ')}. Run the same test on your own region.`, 'Every Indian state, or FIRMS files for anywhere']);
+  document.getElementById('finds').innerHTML = cards.map(c => `<a href="${c[0]}"><b>${c[1]}</b><span>${c[2]}</span><em>${c[3]}</em></a>`).join('');
 }
 
 /* ---------- check your own region ---------- */
@@ -590,6 +611,8 @@ function initChecker(DATA){
     R.filter(r => r.year >= 2019).forEach(r => { h += `<tr><td>${r.year}${r.partial ? ' (incomplete)' : ''}</td><td class="num">${fmt(r.sd)}</td><td class="num">${r.t == null ? '–' : hhmm(r.t)}</td><td class="num">${xf(r.ax)}</td><td class="num">${xf(r.nx)}</td><td class="num">${r.floor > 1.2 ? r.floor.toFixed(1) + '× (' + r.floorLo.toFixed(1) + '–' + r.floorHi.toFixed(1) + ')' : '–'}</td><td>${{timing_break:'Timing break', one_indicator:'One indicator out', no_break:'No break'}[r.status]}</td></tr>`; });
     $('ck-table').innerHTML = h + '</tbody></table>';
   }
+  $('ck-copy').addEventListener('click', () => { const t = $('ck-verdict').textContent + ' ' + $('ck-status').textContent + ' Source: AgniCal timing test on NASA FIRMS MODIS C6.1 and VIIRS S-NPP data.';
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => $('ck-copied').textContent = 'Copied.').catch(() => $('ck-copied').textContent = 'Select the headline above to copy it.'); });
   function load(mo, e, name){ months = mo; end = e; label = name; const [a, b] = peakPair(mo); selA.value = a; selB.value = b; run(); }
   [selA, selB].forEach(el => el.addEventListener('change', run));
   if (DATA) { const names = Object.keys(DATA.states).sort();
@@ -687,14 +710,14 @@ function initIndia(IN, IG){
   seg('india-seasons', S.seasons, () => season, v => season = v, sname);
   seg('india-years', YEARS, () => year, v => year = v, y => PT && y === PT.year ? y + ' so far' : String(y));
   const d = S.data, nt = S.tested[S.seasons[0]];
-  document.getElementById('india-lede').textContent = `Punjab and Haryana are where the shift was reported. Is it happening anywhere else? AgniCal runs the two indicators on ${fmt(d.detections)} detections across India, for every state and three burning seasons. The comparison region changes too: each state is set against the states that show no flag, which are seen by the same drifting satellites.` + (() => { const b = S.breaks[S.seasons[0]], da = (S.drift_alone || {})[S.seasons[0]], y = S.years[S.years.length - 1]; return (PT ? (() => { const p = IN.rows.find(r => r.state === 'Punjab' && r.season === PT.season && r.year === PT.year), v = IN.versus.find(v => v.state === 'Punjab' && v.season === PT.season && v.year === PT.year && v.indicator === 'aqua_over_snpp'); return p ? ` In the season now under way (to ${new Date(PT.end).toLocaleDateString('en-GB', {day:'numeric', month:'long'})} ${PT.year}) the break is still there: Punjab's Aqua ratio is ${p.aqua_x.toFixed(1)}× its old level` + (v ? ` and ${v.ratio.toFixed(1)}× that of unflagged states (${v.ratio_lo.toFixed(1)}–${v.ratio_hi.toFixed(1)})` : '') + '.' : ''; })() : '') + ` For ${y}, the last full year: of ${S.tested[S.seasons[0]]} states with enough post-monsoon fires to test, ${b.length ? 'only ' + b.join(' and ') + (b.length === 1 ? ' shows' : ' show') : 'none shows'} a timing break, and no state shows one in the other two seasons.` + (da && da[y] ? ` In the states with no flag, Aqua's ratio stands at ${da[y].toFixed(2)}× its old level: that is what the orbit drift does on its own.` : ''); })();
+  document.getElementById('india-lede').textContent = `Two signals show when burning has moved out of the satellites' view: the later satellite (Aqua) seeing more fires than usual for each one Suomi NPP sees, and more fires still burning on the night pass. AgniCal runs both on ${fmt(d.detections)} detections across India, for every state and three burning seasons. The comparison region changes too: each state is set against the states that show no flag, which are seen by the same drifting satellites.` + (() => { const b = S.breaks[S.seasons[0]], da = (S.drift_alone || {})[S.seasons[0]], y = S.years[S.years.length - 1]; return (PT ? (() => { const p = IN.rows.find(r => r.state === 'Punjab' && r.season === PT.season && r.year === PT.year), v = IN.versus.find(v => v.state === 'Punjab' && v.season === PT.season && v.year === PT.year && v.indicator === 'aqua_over_snpp'); return p ? ` In the season now under way (to ${new Date(PT.end).toLocaleDateString('en-GB', {day:'numeric', month:'long'})} ${PT.year}) the break is still there: Punjab's Aqua ratio is ${p.aqua_x.toFixed(1)}× its old level` + (v ? ` and ${v.ratio.toFixed(1)}× that of unflagged states (${v.ratio_lo.toFixed(1)}–${v.ratio_hi.toFixed(1)})` : '') + '.' : ''; })() : '') + ` For ${y}, the last full year: of ${S.tested[S.seasons[0]]} states with enough post-monsoon fires to test, ${b.length ? 'only ' + b.join(' and ') + (b.length === 1 ? ' shows' : ' show') : 'none shows'} a timing break, and no state shows one in the other two seasons.` + (da && da[y] ? ` In the states with no flag, Aqua's ratio stands at ${da[y].toFixed(2)}× its old level: that is what the orbit drift does on its own.` : ''); })();
   document.getElementById('india-note').textContent = 'A state is tested when Suomi NPP counted at least ' + S.min_fires + ' daytime fires a season on average in 2012–2022. The floor is Aqua\'s later count in Suomi NPP units, shown where it exceeds the count by more than 20%. Seasons that cross the new year are labelled by the year they start.';
   // 2023, read against the larger control
   const n23 = document.getElementById('note-2023'), v23 = k => IN.versus.find(v => v.state === 'Punjab' && v.season === S.seasons[0] && v.year === 2023 && v.indicator === k);
   const a23 = v23('aqua_over_snpp'), g23 = v23('night_share');
   if (n23 && a23 && g23) n23.textContent = (a23.ratio_lo > 1 && g23.ratio_lo > 1)
-    ? `Against the much larger group of Indian states with no flag (next section), Punjab is distinguishable in 2023 on both: Aqua ratio ${a23.ratio.toFixed(1)}× (${a23.ratio_lo.toFixed(1)}–${a23.ratio_hi.toFixed(1)}), night share ${g23.ratio.toFixed(1)}× (${g23.ratio_lo.toFixed(1)}–${g23.ratio_hi.toFixed(1)}). We read 2023 as the first, smaller step of the shift.`
-    : 'The all-India comparison (next section) does not settle 2023 either.';
+    ? `Against the much larger group of Indian states with no flag (the all-India map above), Punjab is distinguishable in 2023 on both: Aqua ratio ${a23.ratio.toFixed(1)}× (${a23.ratio_lo.toFixed(1)}–${a23.ratio_hi.toFixed(1)}), night share ${g23.ratio.toFixed(1)}× (${g23.ratio_lo.toFixed(1)}–${g23.ratio_hi.toFixed(1)}). We read 2023 as the first, smaller step of the shift.`
+    : 'The all-India comparison above does not settle 2023 either.';
   draw();
 }
 
