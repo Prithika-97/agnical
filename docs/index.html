@@ -100,9 +100,9 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   </header>
 
   <div class="hero">
-    <h1>We tested every Indian state with enough fires. Only in Punjab and Haryana did farm fires slip out of the satellites' view.</h1>
-    <p class="dek" id="dek">NASA's fire satellites pass over India at fixed hours, and those hours have drifted. AgniCal joins their 23-year record into one scale and runs one timing test on every Indian state, against the same satellites' view across the border and in the states that show no break. The shift is concentrated in the northwest, where Punjab and Haryana burn later in the day than the satellites look, and it puts a floor under what the count now misses.</p>
-    <p class="dek" style="font-size:1rem;margin-top:10px"><b style="font-family:var(--display)">What is new here.</b> Others showed with all-day geostationary satellites that burning now peaks in the late afternoon. AgniCal confirms it from NASA's polar data alone, separates it from the drift of the satellites' own orbits, and builds it into the 2003–2025 record. It adds things of its own: the drifting-satellite scanner (Terra and Aqua are the same sensor sliding in opposite directions, so each season samples two extra hours of the fire day); the result for the season now under way, in every Indian state; a blind-spot index for every district; and a checker that runs the same test on FIRMS files for any region on Earth.</p>
+    <h1>We checked every state in India that has enough fires. Only in Punjab and Haryana did farm burning slip out of the satellites' sight.</h1>
+    <p class="dek" id="dek">NASA's fire satellites pass over India at the same hours every day, and those hours have slowly drifted. AgniCal puts 23 years of their records on one scale and runs the same check on every state: is the count still comparable with earlier years? In most places it is. In Punjab and Haryana, farmers now burn later in the day than the satellites look, so the count no longer tells the whole story. We also work out a minimum for what it now misses.</p>
+    <p class="dek" style="font-size:1rem;margin-top:10px"><b style="font-family:var(--display)">What is new here.</b> Scientists at ISRO and NASA have already shown, with satellites that watch all day, that burning now peaks in the late afternoon. We wanted to know whether NASA's regular polar satellites could see the same thing on their own, and whether the satellites' own drifting orbits could explain it. They can't. On top of that, AgniCal adds a few things: a way to use Terra and Aqua's drift as a scanner of the fire day, results for the season happening right now, a blind-spot score for every district, and a checker anyone can run on their own region.</p>
 
     <div class="finds" id="finds"></div>
 
@@ -150,7 +150,7 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   <div class="wrap">
     <div class="prose">
       <h2>Check your own region</h2>
-      <p>Aqua's drift affects every MODIS fire record on Earth. This tool runs the timing test on any place: pick All India, one Indian state, or the control pool of every state outside Punjab and Haryana, or drop in NASA FIRMS archive files (CSV) for MODIS and VIIRS Suomi NPP for your own area. Files are read in your browser and are not sent anywhere.</p>
+      <p>Aqua's drift affects every MODIS fire record on Earth. This tool runs our check on any place: choose All India, one state, or the pool of every state outside Punjab and Haryana, or drop in NASA FIRMS files (CSV) for MODIS and VIIRS Suomi NPP for your own area. Your files are read in your browser and never sent anywhere.</p>
     </div>
     <div class="controls" style="margin-top:12px">
       <label>Indian state <select id="ck-state"></select></label>
@@ -164,7 +164,7 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
     <p style="margin:12px 0 0"><button type="button" id="ck-copy" style="font:inherit;font-family:var(--display);padding:8px 14px;border-radius:10px;border:1px solid var(--rule);background:var(--panel);cursor:pointer">Copy this result</button> <span class="small" id="ck-copied" aria-live="polite"></span></p>
     <div class="prose" style="margin-top:44px">
       <h3 style="font-size:1.5rem">A day of fire, scanned by two drifting satellites</h3>
-      <p>NASA stopped holding Terra's and Aqua's orbits in place, and their viewing hours have been sliding apart ever since: Terra earlier each year, Aqua later. That is usually treated as damage to the record. Here it is used as an instrument. Terra and Aqua carry the same sensor, so each season they give two looks at the same fires at two different hours, and each year the hours are new. Set against Suomi NPP, which stays near 13:30, the points trace how fire activity rises and falls through the day, without a geostationary satellite.</p>
+      <p>NASA stopped keeping Terra and Aqua on their old orbits, so their passing times have been sliding apart: Terra earlier each year, Aqua later. People usually see this as damage to the record. We use it as a tool instead. Both carry the same sensor, so each season they look at the same fires at two different hours, and the hours change every year. Next to Suomi NPP, which stays near 13:30, the points show how fire activity rises and falls through the day, with no all-day satellite needed.</p>
     </div>
     <div class="fig"><div id="ck-scan" style="height:360px"></div></div>
     <p class="caption" id="ck-scan-cap"></p>
@@ -185,8 +185,8 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   <div class="wrap">
     <div class="prose">
       <h2>The proof: is the shift real, or did the satellites change?</h2>
-      <p>That farmers now burn later is not our discovery. Scientists at ISRO and NASA showed it in 2025 and 2026 with geostationary satellites, which watch all day. AgniCal asks what follows for the record everyone uses: can the polar satellites detect the change on their own, is it a real change in burning, and how much does the count now miss?</p>
-      <p>There is a reason to doubt it. Aqua's orbit drifted later and Terra's drifted earlier in the same years, and a satellite that looks at a different hour sees a different number of fires even if nothing on the ground changes. So we ran every test twice: once on Punjab and Haryana, and once on the farm fires just across the border in Pakistani Punjab, which the same satellites see on the same passes.</p>
+      <p>Farmers burning later is not our discovery. Scientists at ISRO and NASA showed it in 2025 and 2026 using satellites that watch all day. Our question is about the record everyone actually uses: can the regular polar satellites pick up the change on their own, is it really the burning that changed, and how much does the count miss now?</p>
+      <p>There's a fair reason to doubt it. Aqua's orbit drifted later and Terra's earlier in the same years, and a satellite looking at a different hour sees a different number of fires even if nothing on the ground changed. So we ran every test twice: once on Punjab and Haryana, and once on the farm fires just across the border in Pakistani Punjab, which the same satellites see on the same passes.</p>
     </div>
     <div class="key"><span><i style="background:var(--ember)"></i>Punjab and Haryana, India</span><span><i style="background:var(--sat)"></i>Punjab, Pakistan (border strip)</span><span>Each line is divided by its own 2012–2022 average, so 1 means no change.</span></div>
     <div class="grid3" style="margin-top:14px">
@@ -219,17 +219,17 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
   <div class="wrap">
     <div class="prose">
       <h2>A floor under the real count</h2>
-      <p>Until 2022 Aqua and Suomi NPP looked at almost the same minute, and one Aqua fire matched a steady number of Suomi NPP fires. Aqua now looks about an hour and a half later. Converting its count with the old ratio gives what Suomi NPP would have counted at Aqua's hour. Burning peaks later still, so this is a floor, not an estimate of the total.</p>
+      <p>Until 2022, Aqua and Suomi NPP passed at almost the same minute, so one Aqua fire meant a steady number of Suomi NPP fires. Aqua now passes about an hour and a half later. Using the old ratio to convert its count tells us what Suomi NPP would have counted at Aqua's hour. Burning peaks later still, so treat this as a minimum, not an estimate of the total.</p>
     </div>
     <div class="fig"><div id="ch-floor" style="height:380px"></div></div>
     <p class="caption" id="floor-caption"></p>
     <div class="prose" style="margin-top:36px">
       <h3 style="font-size:1.5rem">Where a fixed MODIS-to-VIIRS conversion can be trusted</h3>
-      <p>Harmonizing the two sensors means converting an Aqua count into what Suomi NPP would have counted. We fit that ratio for each state and season on 2012–2022, before the drift, then apply it to 2023–2025 and compare with what Suomi NPP actually counted. Where the error stays small, the fixed conversion is safe to use. Where it grows, the conversion has stopped being valid and the region should be flagged instead of converted.</p>
+      <p>To harmonize two sensors, you turn one's count into what the other would have counted. We worked out that conversion for each state and season using 2012–2022, before the drift, then applied it to 2023–2025 and compared the answer with what Suomi NPP really counted. Where the error stays small, the conversion is safe to use. Where it grows, it has stopped working, and the region should be flagged instead of converted.</p>
     </div>
     <div class="prose" style="margin-top:36px">
       <h3 style="font-size:1.5rem">Checked against a published geostationary study</h3>
-      <p>The one outside check available is Jethva's 2026 study of the same region with Korea's GK-2A satellite, which watches every hour and so does not depend on overpass time. It reports that VIIRS missed roughly 56 percent of fires in 2024 and 64 percent in 2025, and that burning peaks around 16:00 to 18:00 IST. We never used GK-2A, so these are independent of our numbers.</p>
+      <p>There is one outside check we could find: Jethva's 2026 study of the same region using Korea's GK-2A satellite, which looks every hour and so doesn't depend on when a satellite passes. It estimates that VIIRS missed roughly 56 percent of fires in 2024 and 64 percent in 2025, and that burning peaks around 16:00 to 18:00 IST. We never used GK-2A data, so this is independent of our numbers.</p>
     </div>
     <div id="tbl-x"></div>
     <p class="caption" id="x-note"></p>
@@ -261,7 +261,7 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
     <div class="prose">
       <h2>What the count says</h2>
       <p id="counts-lede"></p>
-      <p>Before 2012 only MODIS existed. Its pixels are about 1 km wide, so it sees fewer fires than VIIRS (375 m). Joining the two raw records makes 2012 look like a jump in burning. AgniCal learns how MODIS observations translate into VIIRS-equivalent counts during the years both flew, and rebuilds 2003–2011 on the VIIRS scale.</p>
+      <p>Before 2012 only MODIS existed. Its pixels are about 1 km wide, so it sees fewer fires than VIIRS (375 m). Simply joining the two records makes 2012 look like a sudden jump in burning. AgniCal learns how MODIS translates into VIIRS-equivalent counts during the years both flew, and rebuilds 2003–2011 on the VIIRS scale.</p>
     </div>
     <div class="fig"><div id="ch-record" style="height:420px"></div></div>
     <p class="caption" id="record-caption"></p>
@@ -312,7 +312,7 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
       <div><h3>CREAMS laboratory, IARI</h3><p>Publishes the daily paddy-residue burning bulletin from these satellites. The timing-break flag and the late-view floor can be printed beside each season's count, using data the laboratory already holds.</p></div>
       <div><h3>Commission for Air Quality Management, state pollution boards</h3><p>Use year-on-year counts to judge districts. In flagged seasons a district's count is not comparable with its count before 2023; the calendar tool marks these seasons for every district.</p></div>
       <div><h3>Air-quality forecasters for Delhi</h3><p>Emission inputs built from early-afternoon fire counts understate smoke in flagged seasons. The floor gives a minimum scaling, season by season.</p></div>
-      <div><h3>Anyone who uses a MODIS fire record, anywhere</h3><p>Aqua's drift is global. The checker on this page tells you, from your own FIRMS files, whether your region's count is still comparable with earlier years.</p></div>
+      <div><h3>Anyone who uses a MODIS fire record, anywhere</h3><p>Aqua's drift is global. The checker above tells you, from your own FIRMS files, whether your region's count can still be compared with earlier years.</p></div>
       <div><h3>Researchers and journalists</h3><p>The harmonized 2003–2025 record, with uncertainty and flags, is one file: <a href="data/agnical_record.csv">agnical_record.csv</a>. The method is not tied to one region: the same timing test ran unchanged on every state of India.</p></div>
     </div>
   </div>
@@ -346,18 +346,7 @@ footer{padding:48px 0 64px;border-top:1px solid var(--rule);color:var(--muted);f
         <li>The 2026 season is judged on 1 October to 2 November only, from near-real-time data, which NASA later replaces with a standard product. In the checker, an incomplete season is shown but compared with full seasons, so read it with care.</li>
         <li>The district blind-spot index rests on small counts and has no interval.</li>
         <li>The all-India run uses MODIS and Suomi NPP only, with Suomi NPP fires counted per 0.1° cell and assigned to the state of the cell centre, so a small share near state borders falls to the neighbour.</li>
-        <li>We could not obtain geostationary fire data during the hackathon, so the peak hours of 16:00–18:00 are quoted from published studies, not computed here.</li>
-        <li>District borders are from 2021, before Malerkotla and Charkhi Dadri were created; their fires are counted under the districts they were formed from.</li>
-        <li>Near-real-time 2026 files carry no fire-type field, so a few static heat sources may remain in this season's counts.</li>
-      </ul>
-      <h3 style="margin-top:28px">Sources</h3>
-      <ul class="small">
-        <li>NASA FIRMS active fire data: MODIS Collection 6.1 (MCD14ML), VIIRS 375 m (VNP14IMGML, VJ114IMGML, VJ214IMG). <a href="https://firms.modaps.eosdis.nasa.gov/download/">firms.modaps.eosdis.nasa.gov</a></li>
-        <li>Boundaries: geoBoundaries gbOpen IND. States: DataMeet / Election Commission of India (CC BY 2.5 IN). Districts: Pathways Data / lgdirectory.gov.in (ODbL 1.0). <a href="https://www.geoboundaries.org">geoboundaries.org</a></li>
-        <li id="pub-sources"></li>
-      </ul>
-      <h3 style="margin-top:28px">Use of AI</h3>
-      <p class="small">Code and text were drafted with Claude (Anthropic) and reviewed, run and checked by the author. All figures are computed from NASA data by the open-source pipeline; no AI-generated images or data are used.</p>
+        <li>We couldn't get geostationary fire data during the hackathon, so the 16:00–18:00 peak is quoted from published studies, not computed here.</p>
     </div>
   </div>
 </section>

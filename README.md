@@ -1,29 +1,32 @@
 # AgniCal
 
-**Punjab and Haryana's farm fires moved later in the day. The satellites that count them didn't.**
+**We checked every Indian state. Only in Punjab and Haryana did farm burning slip out of the satellites' sight.**
 
-NASA Space Apps Challenge 2026 · Challenge: *Harmonization of MODIS and VIIRS Hot Spots*
+NASA Space Apps Challenge 2026, challenge: *Harmonization of MODIS and VIIRS Hot Spots*
 
 Crop-residue fires in Punjab and Haryana feed north India's winter smog, and claims of
 progress rest on one number: how many fires NASA's polar satellites count. Those satellites
-(MODIS on Terra and Aqua; VIIRS on Suomi NPP, NOAA-20 and NOAA-21) pass at fixed hours.
+(MODIS on Terra and Aqua; VIIRS on Suomi NPP, NOAA-20 and NOAA-21) pass at the same hours every day.
 
-That farmers now burn later in the day is **not our discovery**. Jethva (2026, *Remote
-Sensing*), Singh et al. (ISRO SAC, 2025, *Current Science*) and iFOREST (2025) showed it with
-geostationary satellites and burnt-area mapping. AgniCal asks what follows for the harmonized
-MODIS-VIIRS record that everyone uses, and answers with NASA's polar data alone:
+Farmers burning later in the day is **not our discovery**. Jethva (2026, *Remote Sensing*),
+Singh et al. (ISRO SAC, 2025, *Current Science*) and iFOREST (2025) showed it with satellites
+that watch all day, and with burnt-area maps. We asked a different question: what does it mean for
+the combined MODIS-VIIRS record everyone uses, and can NASA's polar data show it on its own?
+This is what AgniCal adds:
 
 1. **One scale for 2003-2025**, with uncertainty. MODIS is converted to VIIRS-equivalent
-   counts so the 2012 switch no longer looks like a jump in burning.
-2. **A record that knows when it stops being comparable.** Two model-free indicators flag
-   seasons in which burning left the satellites' viewing hours.
-3. **The drifting-satellite scanner, with an India-wide control.** The scanner and region checker open on All India and can switch to any state or to the pool of every state outside Punjab and Haryana, which stays on the old curve while Punjab leaves it.
-
-   The scanner itself: Terra and Aqua are the same sensor sliding in opposite directions (about 10:00 and 15:15 local now), so each season samples two extra hours of the fire day. Counts at each hour, in Suomi NPP 13:30 units, trace the daily fire cycle; the page has a "Move the satellite" slider. Caveat: the two satellites differ slightly in sensitivity and scene conditions, and the slider interpolates between real looks, it is not a measurement away from them.
-4. **A control for the satellites themselves.** Aqua and Terra both drifted in the same years.
-   Every test is repeated on the farm fires just across the border in Pakistani Punjab, which
-   the same satellites see on the same passes.
-4. **A floor under the real count.** Aqua's later pass, in Suomi NPP units.
+   counts, so the 2012 switch no longer looks like a jump in burning.
+2. **A record that knows when it stops being comparable.** Two indicators that need no model flag
+   the seasons in which burning moved out of the satellites' viewing hours.
+3. **A scanner built from the drift.** Terra and Aqua carry the same sensor and are sliding in opposite
+   directions (about 10:00 and 15:15 local time now), so each season gives two extra looks at the fire day.
+   The page has a "Move the satellite" slider, and the scanner and region checker open on All India. You can switch to any
+   state, or to the pool of every state outside Punjab and Haryana, which stays on the old curve while Punjab leaves it.
+   One caution: Terra and Aqua differ a little in sensitivity and scene conditions, and the slider fills in between real
+   looks, so it is not a measurement away from them.
+4. **A control for the satellites themselves.** Aqua and Terra both drifted in the same years, so every
+   test is repeated on the farm fires just across the border in Pakistani Punjab, which the same satellites see on the same passes.
+5. **A floor under the real count.** Aqua's later pass, in Suomi NPP units: a minimum for what the count now misses.
 
 ## What the data show (all computed by `pipeline.py`; see `reports/RESULTS.md`)
 
