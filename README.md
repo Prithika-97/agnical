@@ -184,14 +184,6 @@ by `regions.build_boundary_file` and `controls.build_region_file`.
 - Singh, N., Pradhan, R., Shukla, B. P., Pandya, M. R. (Space Applications Centre, ISRO), communication in *Current Science*, 2025, as reported by The Tribune, 10 Dec 2025.
 - iFOREST (2025). Stubble Burning Status Report 2025, as reported by The Tribune, 9 Dec 2025.
 
-## Cite
-
-If you use the record or the test, please cite this repository (see `CITATION.cff`).
-
-## License
-
-MIT. NASA FIRMS data and the boundary files keep their own licenses (see above).
-
 ## Use of AI
 
 Code and text were drafted with Claude (Anthropic) and reviewed, run and checked by the author.
